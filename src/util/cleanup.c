@@ -173,6 +173,55 @@ EXPORT	void init_clean_up(
 *	Also prints an error message.  Positive values of
 *	the argument are reserved for software and hardware failures.
 */
+#include <execinfo.h>   /* Needed for tracking function calls */
+LOCAL  void trace_back()
+{
+        /*imitate gdb's output*/
+        #define SIZE 20  /*number of functions need to traceback*/
+        void *buffer[SIZE];
+        char **strings, *ptr;
+        int nptrs, j, i, k;
+        char syscom[256],fname[256];
+        FILE* pipe;
+
+        nptrs = backtrace(buffer,SIZE);
+        strings = backtrace_symbols(buffer,nptrs);
+        printf("======= Backtrace: =========\n");
+        if (strings == NULL){
+            perror("backtrace_symbols");
+        }
+        else for (j = 0; j < nptrs; j++)
+        {
+            /*split strings[j] to program name and function name*/
+            i = 0; k = 0;
+            while (strings[j][i] != ')')
+            {
+                if (strings[j][i] == '(')
+                    k = i;
+                i++;
+            }
+            /*print program name and function name*/
+            printf("#%-2d %s in %.*s ",j,strings[j]+i+1,i-k+1,strings[j]+k);
+            /*print file name and line number*/
+            if (buffer[j] != NULL)
+            sprintf(syscom,"addr2line %p -e %.*s",buffer[j],k,strings[j]);
+            pipe = popen(syscom,"r");
+            if (fgets(syscom,sizeof(syscom),pipe) != 0)
+            {
+                i = 0; ptr = syscom;
+                while (syscom[i] != '\0')
+                {
+                    if (syscom[i] == '/')
+                        ptr = syscom + i + 1;
+                    i++;
+                }
+                printf("at %s",ptr);
+            }
+            pclose(pipe);
+        }
+        free(strings);
+}
+
 
 EXPORT void clean_upp(
 	int		error)
@@ -181,6 +230,9 @@ EXPORT void clean_upp(
 	int		call_printout;
 	time_t		tvec;
 	const char      *errstring;
+
+	if (error)
+            trace_back(); /*backtracing function calls*/
 
 	errstring = strerror(errno);
 	debug_enter(clean_up)

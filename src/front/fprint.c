@@ -1224,8 +1224,8 @@ LOCAL	void show_front_vtk(
 	    screen("Cannot create directory %s\n",dirname);
 	    clean_up(ERROR);
 	}
-        vtk_interface_plot(dirname,front->interf,print_in_binary,
-					front->time,front->step);
+        //vtk_interface_plot(dirname,front->interf,print_in_binary,
+	//				front->time,front->step);
 	if (first == YES)
 	{
 	    sprintf(fname,"%s/intfc.visit",vdirname);
@@ -1291,7 +1291,7 @@ LOCAL	void show_front_vtk(
 	    }
 	    if (vtk_movie_var->plot_intfc_var == YES);
 	    {
-		vtk_plot_intfc_color(dirname,front);
+		//vtk_plot_intfc_color(dirname,front);
 		if (first == YES)
 		{
 	    	    sprintf(fname,"%s/%s.visit",vdirname,cname);
@@ -1631,13 +1631,13 @@ EXPORT  void show_front_output(
         char *out_name,
 	boolean print_in_binary)
 {   
-	show_front_gd(front,out_name);
-	show_front_xg(front,out_name);
+	//show_front_gd(front,out_name);
+	//show_front_xg(front,out_name);
 	show_front_hdf(front,out_name);
-	show_front_gv(front,out_name);
+	//show_front_gv(front,out_name);
 	
 	show_front_vtk(front,out_name,print_in_binary);	
-	show_front_sdl(front,out_name);
+	//show_front_sdl(front,out_name);
 }       /* end show_front_output */
 
 #if defined(USE_HDF)
@@ -3902,8 +3902,8 @@ LOCAL void vtk_plot_scalar_field2d(
         int kmin,kmax,jmin,jmax,imin,imax;
         imin = (lbuf[0] == 0) ? 1 : lbuf[0];
         jmin = (lbuf[1] == 0) ? 1 : lbuf[1];
-        imax = (ubuf[0] == 0) ? top_gmax[0] - 1 : top_gmax[0] - ubuf[0];
-        jmax = (ubuf[1] == 0) ? top_gmax[1] - 1 : top_gmax[1] - ubuf[1];
+        imax = (ubuf[0] == 0) ? top_gmax[0] - 1 : top_gmax[0] - ubuf[0]+1;
+        jmax = (ubuf[1] == 0) ? top_gmax[1] - 1 : top_gmax[1] - ubuf[1]+1;
 
 
         sprintf(filename, "%s/vtk/vtk.ts%s",OutName(front),
@@ -3935,7 +3935,7 @@ LOCAL void vtk_plot_scalar_field2d(
         for (i = jmin; i <= jmax; i++)
                 fprintf(outfile,"%f\n",top_L[1]+(i-jmin)*top_h[1]);
         fprintf(outfile,"Z_COORDINATES    %d float\n",pointsz);
-                fprintf(outfile,"%f\n",0);
+                fprintf(outfile,"%f\n",0.0);
 
         fprintf(outfile, "POINT_DATA %i\n", num_points);
         fprintf(outfile, "SCALARS %s float\n",varname);
@@ -3975,15 +3975,15 @@ LOCAL void vtk_plot_scalar_field3d(
         int             *top_gmax = top_grid->gmax;
         double          *top_h = top_grid->h;
         /*use local grid for plotting, buffer is not plotted out*/
-        double          *top_L = front->pp_grid->Zoom_grid.L;
+        double          *top_L = top_grid->L;
 
         int kmin,kmax,jmin,jmax,imin,imax;
-        imin = (lbuf[0] == 0) ? 1 : lbuf[0];
-        jmin = (lbuf[1] == 0) ? 1 : lbuf[1];
-        kmin = (lbuf[2] == 0) ? 1 : lbuf[2];
-        imax = (ubuf[0] == 0) ? top_gmax[0] - 1 : top_gmax[0] - ubuf[0];
-        jmax = (ubuf[1] == 0) ? top_gmax[1] - 1 : top_gmax[1] - ubuf[1];
-        kmax = (ubuf[2] == 0) ? top_gmax[2] - 1 : top_gmax[2] - ubuf[2];
+        imin = (lbuf[0] == 0) ? 1 : lbuf[0]-1;
+        jmin = (lbuf[1] == 0) ? 1 : lbuf[1]-1;
+        kmin = (lbuf[2] == 0) ? 1 : lbuf[2]-1;
+        imax = (ubuf[0] == 0) ? top_gmax[0] - 1 : top_gmax[0] - ubuf[0]+1;
+        jmax = (ubuf[1] == 0) ? top_gmax[1] - 1 : top_gmax[1] - ubuf[1]+1;
+        kmax = (ubuf[2] == 0) ? top_gmax[2] - 1 : top_gmax[2] - ubuf[2]+1;
 
 
         sprintf(filename, "%s/vtk/vtk.ts%s",OutName(front),
@@ -4010,13 +4010,13 @@ LOCAL void vtk_plot_scalar_field3d(
         fprintf(outfile,"DIMENSIONS  %d  %d  %d\n",pointsx,pointsy,pointsz);
         fprintf(outfile,"X_COORDINATES    %d float\n",pointsx);
         for (i = imin; i <= imax; i++)
-                fprintf(outfile,"%f\n",top_L[0]+(i-imin+0.5)*top_h[0]);
+                fprintf(outfile,"%f\n",top_L[0]+(i-imin)*top_h[0]);
         fprintf(outfile,"Y_COORDINATES    %d float\n",pointsy);
         for (i = jmin; i <= jmax; i++)
-                fprintf(outfile,"%f\n",top_L[1]+(i-jmin+0.5)*top_h[1]);
+                fprintf(outfile,"%f\n",top_L[1]+(i-jmin)*top_h[1]);
         fprintf(outfile,"Z_COORDINATES    %d float\n",pointsz);
         for (i = kmin; i <= kmax; i++)
-                fprintf(outfile,"%f\n",top_L[2]+(i-kmin+0.5)*top_h[2]);
+                fprintf(outfile,"%f\n",top_L[2]+(i-kmin)*top_h[2]);
 
         fprintf(outfile, "POINT_DATA %i\n", num_points);
         fprintf(outfile, "SCALARS %s float\n",varname);
@@ -4242,4 +4242,5 @@ LOCAL void vtk_plot_intfc_color(
 		fprintf(vfile,"%f\n",tri->color);
 	    }
 	}
+	fclose(vfile);
 }	/* end vtk_plot_intfc_color */

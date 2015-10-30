@@ -57,6 +57,7 @@ struct _IF_FIELD {
 	double *rho;
 	double **grad_q;
 	double **f_surf;		// Surface force (such as tension)
+	double **ext_accel;		/*source term for NS equation*/
 
 	double *div_U;
 	double *d_phi;			/* Dual grid phi */
@@ -129,7 +130,7 @@ typedef struct {
 	boolean if_ref_pres;
 	boolean use_eddy_visc;	/* Yes if to use eddy viscosity */
 	double  ref_pres;
-	double  Amplitute; 	/*Amplitute of velocity*/
+	double  Urms; 		/*rms of turbulent velocity*/
 	double	ymax;	   	/* Maximum distance in Baldwin-Lomax model */
 } IF_PARAMS;
 
@@ -234,6 +235,8 @@ public:
 	//Initialization of States
 	void (*getInitialState) (COMPONENT,double*,IF_FIELD*,int,int,
 				IF_PARAMS*);
+	void (*setInitialVelocity) (COMPONENT,int*,double*,double*,double*,
+				RECT_GRID*,IF_PARAMS*);
 	int (*findStateAtCrossing)(Front*,int*,GRID_DIRECTION,int,
 				POINTER*,HYPER_SURF**,double*);
 	int (*findStateAtCGCrossing)(Front*,int*,GRID_DIRECTION,int,
@@ -355,7 +358,7 @@ protected:
 	double computeFieldPointDiv(int*, double**);
 	double computeDualFieldPointDiv(int*, double**);
 	double computeDualMu(int*, double*);
-	double computeFieldPointMuTurb(int*, double, boolean);
+	double computeFieldPointMuTurb(int*, double);
 	void   computeFieldPointGrad(int*, double*, double*);
 	void   computeDualFieldPointGrad(int*, double*, double*);
 	void   checkVelocityDiv(const char*);

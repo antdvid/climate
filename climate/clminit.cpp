@@ -4,8 +4,10 @@ Front Traking algorithms. Front Tracking is a numerical method for
 the solution of partial differential equations whose solutions have 
 discontinuities.  
 
+
 Copyright (C) 1999 by The University at Stony Brook. 
  
+
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
@@ -29,8 +31,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 static void initRandomDrops(Front*,double**,double*,int*,int*,
                                 double,double);
-static void initRandomParticles(Front*,PARTICLE*,int&,
+static PARTICLE* initRandomParticles(Front*,int&,
                                 double,double);
+static void readCustomOption(FILE*,PARAMS*,IF_PARAMS*);
 
 extern void read_CL_prob_type(Front* front)
 {
@@ -42,74 +45,246 @@ extern void read_CL_prob_type(Front* front)
 	CL_PROB_TYPE *prob_type = &(eqn_params->prob_type);
 
 	printf("Problem can be:\n");
-	printf("    BUOYANC_TEST\n");
-	printf("    CHANNEL_TEST\n");
-	printf("    CLIMATE\n");
-	printf("    RANDOM_FIELD\n");
 	printf("    PARTICLE_TRACKING\n");
+	printf("    RANDOM_FIELD\n");
+	printf("    ENTRAINMENT\n");
+	printf("    CUSTOM_OPTION\n");
+	printf("    PREFERENTIAL_CONCENTRATION\n");
 
 	/*Default option*/
-        *prob_type = CLIMATE;
+        *prob_type = PARTICLE_TRACKING;
 	eqn_params->no_droplets = NO;
-	eqn_params->droplets_fixed = NO;	    
         eqn_params->init_state = RAND_STATE;
-        iFparams->if_buoyancy = NO; 
+        eqn_params->init_vapor_state = CONST_STATE;
+        eqn_params->init_temp_state = CONST_STATE;
+        eqn_params->init_drop_state = RAND_STATE;
+        iFparams->if_buoyancy = YES; 
 	iFparams->if_ref_pres = YES;
+	eqn_params->if_condensation = YES;
+	eqn_params->if_sedimentation = YES;
+	eqn_params->if_volume_force = NO;
+	eqn_params->frac = -1; /*frac is not predefined*/
+        eqn_params->is_bigdata = NO; /*default is not to record full data*/
 	/*End default option*/
 
 	CursorAfterStringOpt(infile,"Enter problem type:");
         fscanf(infile,"%s",string);
         (void) printf("%s\n",string);
+
 	if (string[0] == 'P' || string[0] == 'p')
 	{
 	    *prob_type = PARTICLE_TRACKING;
 	    eqn_params->no_droplets = NO; 
-            eqn_params->droplets_fixed = YES;
-            eqn_params->init_state = PRESET_STATE;
+            eqn_params->init_state = FOURIER_STATE;
+            eqn_params->init_vapor_state = CONST_STATE;
             iFparams->if_buoyancy = YES;
             iFparams->if_ref_pres = YES;
+	    if (string[1] == 'R' || string[1] == 'r')
+	    {
+		eqn_params->if_condensation = NO;
+		printf("Condensation is not considered\n");
+		CursorAfterStringOpt(infile,
+		"Enter yes to consider sedimentation:");
+		fscanf(infile,"%s ",string);
+		(void) printf("%s\n",string);
+		if (string[0] == 'Y' || string[0] == 'y')
+		    eqn_params->if_sedimentation = YES;	
+		else
+		    eqn_params->if_sedimentation = NO;
+	    }
 	}
-	else if (string[0] == 'B' || string[0] == 'b')
+	else if (string[0] == 'T' || string[0] == 't')
 	{
-	    *prob_type = BUOYANCY_TEST;
+	    *prob_type = RANDOM_FIELD;
 	    eqn_params->no_droplets = YES;
-            eqn_params->droplets_fixed = YES;
-            eqn_params->init_state = ZERO_STATE;
-	    iFparams->if_buoyancy = YES;
-            iFparams->if_ref_pres = NO;
-	}
-	else if (string[0] == 'C' || string[0] == 'c')
-	{
-	    if (string[1] == 'H' || string[1] == 'h')
-	    {
-		*prob_type = CHANNEL_TEST;
-                eqn_params->no_droplets = NO;
-                eqn_params->droplets_fixed = YES;
-                eqn_params->init_state = ZERO_STATE;
-		iFparams->if_ref_pres = NO;
-		iFparams->if_buoyancy = NO;
-	    }
-	    else if (string[1] == 'L' || string[1] == 'l')
-	    {
-		*prob_type = CLIMATE;
-		eqn_params->no_droplets = NO;
-                eqn_params->droplets_fixed = NO;
-		iFparams->if_ref_pres = YES;
-                eqn_params->init_state = RAND_STATE;
-                iFparams->if_buoyancy = NO;
-	    }
-	    
+            eqn_params->init_state = TAYLOR_STATE;
+            eqn_params->init_vapor_state = RAND_STATE;
+	    iFparams->if_buoyancy = NO;
+	    iFparams->if_ref_pres = NO;
 	}
 	else if (string[0] == 'R' || string[0] == 'r')
 	{
 	    *prob_type = RANDOM_FIELD;
 	    eqn_params->no_droplets = YES;
-            eqn_params->droplets_fixed = YES;
-            eqn_params->init_state = PRESET_STATE;
+            eqn_params->init_state = FOURIER_STATE;
+            eqn_params->init_vapor_state = RAND_STATE;
+	    iFparams->if_buoyancy = YES;
+	    iFparams->if_ref_pres = NO;
+	}
+	else if (string[0] == 'E' || string[0] == 'e')
+	{
+	    int case_num;
+	    CursorAfterStringOpt(infile,"Enter case type:");
+            fscanf(infile,"%d",&case_num);
+            (void) printf("%d\n",case_num);
+	    eqn_params->init_temp_state = PRESET_STATE;
+	    switch (case_num)
+	    {
+		case 1:
+		    eqn_params->init_state = FOURIER_STATE;
+            	    eqn_params->init_vapor_state = FOURIER_STATE;
+		    break;
+		case 2:
+		    eqn_params->init_state = FOURIER_STATE;
+            	    eqn_params->init_vapor_state = LR_STATE;
+		    break;
+		case 3:
+		    eqn_params->init_state = FOURIER_STATE;
+            	    eqn_params->init_vapor_state = TB_STATE;
+		    break;
+		default:
+		    printf("Case can only be 1,2,3, unknown case %d!\n",case_num);
+		    clean_up(ERROR);
+	    }
+	    if (CursorAfterStringOpt(infile,"Enter fraction of cloudy air:"))
+	    {
+            	fscanf(infile,"%lf",&eqn_params->frac);
+            	(void) printf("%f\n",eqn_params->frac);
+	    }
+	    if(CursorAfterStringOpt(infile,"Enter yes to consider condensation:"))
+            {
+            	fscanf(infile,"%s",string);
+            	(void) printf("%s\n",string);
+
+            	if (string[0] == 'Y' || string[0] == 'y')
+                	eqn_params->if_condensation = YES;
+            	else
+                	eqn_params->if_condensation = NO;
+            }
+	    if(CursorAfterStringOpt(infile,"Enter yes to use big data:"))
+	    {
+		 fscanf(infile,"%s",string);
+                (void) printf("%s\n",string);
+                if (string[0] == 'Y' || string[0] == 'y')
+                        eqn_params->is_bigdata = YES;
+                else
+                        eqn_params->is_bigdata = NO;
+	    }
+	    *prob_type = PARTICLE_TRACKING;
+	    eqn_params->no_droplets = NO;
+            eqn_params->init_drop_state = PRESET_STATE;
 	    iFparams->if_buoyancy = YES;
 	    iFparams->if_ref_pres = YES;
 	}
-	fclose(infile);
+	else
+        {
+	    /*User custom option*/
+            *prob_type = PARTICLE_TRACKING;
+	    readCustomOption(infile,eqn_params,iFparams);
+        }
+}
+
+static void readCustomOption(
+	FILE* infile,
+	PARAMS* eqn_params,
+	IF_PARAMS* iFparams)
+{
+	char string[100];
+	printf("The default option is:\n");
+	printf("    Buoyancy:YES\n    Reference pressure:YES\n");
+	printf("    Condensation:YES\n    Sedimentation:YES\n");
+	printf("    Macroscopic solver:NO\n");
+	printf("    Init velocity state:RAND_STATE\n");
+	printf("    Init vapor state:CONST_STATE\n");
+	printf("    Init temperature state:CONST_STATE\n");
+	printf("    Init drop state:RAND_STATE\n");
+	if(CursorAfterStringOpt(infile,"Enter yes to consider buoyancy:"))
+        {
+            fscanf(infile,"%s",string);
+            (void) printf("%s\n",string);
+
+            if (string[0] == 'Y' || string[0] == 'y')
+                iFparams->if_buoyancy = YES;
+            else
+                iFparams->if_buoyancy = NO;
+        }
+	if(CursorAfterStringOpt(infile,"Enter yes to consider reference pressure:"))
+        {
+            fscanf(infile,"%s",string);
+            (void) printf("%s\n",string);
+
+            if (string[0] == 'Y' || string[0] == 'y')
+                iFparams->if_ref_pres = YES;
+            else
+                iFparams->if_ref_pres = NO;
+        }
+        if(CursorAfterStringOpt(infile,"Enter yes to consider sedimentation:"))
+        {
+            fscanf(infile,"%s",string);
+            (void) printf("%s\n",string);
+
+            if (string[0] == 'Y' || string[0] == 'y')
+                eqn_params->if_sedimentation = YES;
+            else
+                eqn_params->if_sedimentation = NO;
+        }
+        if(CursorAfterStringOpt(infile,"Enter yes to consider condensation:"))
+        {
+            fscanf(infile,"%s",string);
+            (void) printf("%s\n",string);
+
+            if (string[0] == 'Y' || string[0] == 'y')
+                eqn_params->if_condensation = YES;
+            else
+                eqn_params->if_condensation = NO;
+        }
+        if(CursorAfterStringOpt(infile,"Enter initial velocity state:"))
+        {
+            fscanf(infile,"%s",string);
+            (void) printf("%s\n",string);
+
+            if (string[0] == 'R' || string[0] == 'r')
+                eqn_params->init_state = RAND_STATE;
+            else if (string[0] == 'Z' || string[0] == 'z')
+                eqn_params->init_state = ZERO_STATE;
+	    else if (string[0] == 'T' || string[0] == 't')
+                eqn_params->init_state = TAYLOR_STATE;
+	    else if (string[0] == 'P' || string[0] == 'p')
+		eqn_params->init_state = PRESET_STATE;
+	    else if (string[0] == 'F' || string[0] == 'f')
+		eqn_params->init_state = FOURIER_STATE;
+	    else
+	    {
+		printf("Unknown state: %s\n",string);
+		clean_up(0);
+	    }
+        }
+	if(CursorAfterStringOpt(infile,"Enter initial vapor state:"))
+	{
+            fscanf(infile,"%s",string);
+            (void) printf("%s\n",string);
+
+            if (string[0] == 'R' || string[0] == 'r')
+                eqn_params->init_vapor_state = RAND_STATE;
+            else if (string[0] == 'C' || string[0] == 'c')
+                eqn_params->init_vapor_state = CONST_STATE;
+            else if (string[0] == 'T' || string[0] == 'T')
+                eqn_params->init_vapor_state = TB_STATE;
+            else if (string[0] == 'L' || string[0] == 'l')
+                eqn_params->init_vapor_state = LR_STATE;
+            else if (string[0] == 'f' || string[0] == 'F')
+                eqn_params->init_vapor_state = FOURIER_STATE;
+            else
+            {
+                printf("Unknown state: %s\n",string);
+                clean_up(0);
+            }
+	}
+	if(CursorAfterStringOpt(infile,"Enter initial particle state:"))
+	{
+            fscanf(infile,"%s",string);
+            (void) printf("%s\n",string);
+
+            if (string[0] == 'R' || string[0] == 'r')
+                eqn_params->init_drop_state = RAND_STATE;
+            else if (string[0] == 'P' || string[0] == 'p')
+                eqn_params->init_drop_state = PRESET_STATE;
+            else
+            {
+                printf("Unknown state: %s\n",string);
+                clean_up(0);
+            }
+	}
 }
 
 extern void readPhaseParams(
@@ -126,34 +301,54 @@ extern void readPhaseParams(
 
 	infile = fopen(in_name,"r");
 
-        CursorAfterString(infile,"Enter number of phases:");
-        fscanf(infile,"%d",&eqn_params->num_phases);
-	num_phases = eqn_params->num_phases;
-	(void) printf("%d phases are included\n",num_phases);
-	FT_VectorMemoryAlloc((POINTER*)&eqn_params->T0,num_phases,
-					sizeof(double));
-	FT_VectorMemoryAlloc((POINTER*)&eqn_params->Ti,num_phases-1,
-					sizeof(double));
-	for (i = 0; i < num_phases; ++i)
-	{
-	    sprintf(string,"Enter ambient temperature of phase %d:",i+1);
-	    CursorAfterString(infile,string);
-	    fscanf(infile,"%lf",&eqn_params->T0[i]);
-	    (void) printf("%f\n",eqn_params->T0[i]);
-	    sprintf(string,"Enter diffusivity of phase %d:",i+1);
-	    CursorAfterString(infile,string);
-	    fscanf(infile,"%lf",&eqn_params->D);
-	    (void) printf("%f\n",eqn_params->D);
-            if (i != num_phases-1)
-            {
-                sprintf(string,"Enter melting temperature of interface %d:",
-                                                i+1);
-                CursorAfterString(infile,string);
-                fscanf(infile,"%lf",&eqn_params->Ti[i]);
-                (void) printf("%f\n",eqn_params->Ti[i]);
-            }
+	/*Default configuration*/
+	eqn_params->T0 = 273;
+	eqn_params->qe = 2.848;
+	eqn_params->D = 0.0000216;
+	eqn_params->Lh = 2500000.0;
+	eqn_params->Rv = 461.5;
+	eqn_params->Rd = 287.0;
+	eqn_params->Kc = 0.0238;
+	eqn_params->Cp = 1005.0;
+	for (i = 0; i < MAXD; i++)
+	    eqn_params->Nclip[i] = 1;
+	/*End default configuration*/
 
-	}
+	CursorAfterStringOpt(infile,"Enter initial temperature(K):");
+	fscanf(infile,"%lf ",&eqn_params->T0);
+	(void) printf("%f\n",eqn_params->T0);	
+
+	CursorAfterStringOpt(infile,"Enter initial vapor mixing ratio(g/kg):");
+	fscanf(infile,"%lf ",&eqn_params->qe);
+	(void) printf("%f\n",eqn_params->qe);
+
+	CursorAfterStringOpt(infile,"Enter initial velocity(m/s):");
+	fscanf(infile,"%lf ",&iFparams->Urms);
+	(void) printf("%f\n",iFparams->Urms);
+	
+        CursorAfterStringOpt(infile,"Enter D:");
+        fscanf(infile,"%lf ",&eqn_params->D);
+        (void) printf("%f\n",eqn_params->D); 
+
+        CursorAfterStringOpt(infile,"Enter Lh:");
+        fscanf(infile,"%lf ",&eqn_params->Lh);
+        (void) printf("%f\n",eqn_params->Lh); 
+
+        CursorAfterStringOpt(infile,"Enter Rv:");
+        fscanf(infile,"%lf ",&eqn_params->Rv);
+        (void) printf("%f\n",eqn_params->Rv);
+
+	CursorAfterStringOpt(infile,"Enter Rd:");
+        fscanf(infile,"%lf ",&eqn_params->Rd);
+        (void) printf("%f\n",eqn_params->Rd); 
+
+        CursorAfterStringOpt(infile,"Enter Kc:");
+        fscanf(infile,"%lf ",&eqn_params->Kc);
+        (void) printf("%f\n",eqn_params->Kc); 
+
+        CursorAfterStringOpt(infile,"Enter Cp:");
+        fscanf(infile,"%lf ",&eqn_params->Cp);
+        (void) printf("%f\n",eqn_params->Cp); 
 
 	eqn_params->num_scheme = UNSPLIT_IMPLICIT;  // default
 	eqn_params->pde_order = 2; //default
@@ -179,6 +374,8 @@ extern void readPhaseParams(
 	    else if ((scheme[0] == 'I' || scheme[0] == 'i') &&
 	    	(scheme[1] == 'C' || scheme[1] == 'c')) 
 	    	eqn_params->num_scheme = UNSPLIT_IMPLICIT_CIM;
+	    else if (scheme[0] == 'W' || scheme[0] == 'w') 
+	    	eqn_params->num_scheme = WENO_CRANK_NICOLSON;
 	}
 	
 	if (eqn_params->num_scheme == UNSPLIT_IMPLICIT)
@@ -195,13 +392,6 @@ extern void readPhaseParams(
             CursorAfterString(infile,"Enter reference pressure(Pa):");
             fscanf(infile,"%lf ",&iFparams->ref_pres);
             (void) printf("%f\n",iFparams->ref_pres);
-        }
-        if(iFparams->if_buoyancy == YES)
-        {
-            printf("Set to be buoyancy driven flow:\n");
-            CursorAfterString(infile,"Enter reference temperature(K):");
-            fscanf(infile,"%lf ",&iFparams->ref_temp);
-            (void) printf("%f\n",iFparams->ref_temp);
         }
 	/*set default position limit for droplets*/
 	for (i = 0; i < dim; ++i)
@@ -224,6 +414,22 @@ extern void readPhaseParams(
 	}
 	printf("\n");
 
+	CursorAfterStringOpt(infile,"Enter number of clips in direction:");
+	for (i = 0; i < dim; ++i)
+	{
+            fscanf(infile,"%d ",&eqn_params->Nclip[i]);
+            (void) printf("%d  ",eqn_params->Nclip[i]);
+	}
+	printf("\n");
+
+        CursorAfterStringOpt(infile,"Enter yes to enable volume force:");
+        fscanf(infile,"%s ",string);
+        (void) printf("%s\n",string);
+        if (string[0] == 'Y' || string[0] == 'y')
+            eqn_params->if_volume_force = YES;
+        else
+            eqn_params->if_volume_force = NO;
+
 	fclose(infile);
 }
 
@@ -240,6 +446,11 @@ extern void readWaterDropsParams(
         SURFACE **s;
         CURVE **c;
 
+	if (pp_numnodes() > 1)
+	{
+	    printf("Not implemented for MPI\n");
+	    clean_up(ERROR);
+	}
         CursorAfterString(infile,"Enter number of water drops:");
         fscanf(infile,"%d",&num_drops);
         (void) printf("%d\n",num_drops);
@@ -248,9 +459,6 @@ extern void readWaterDropsParams(
         fscanf(infile,"%lf",&drop_dens);
         (void) printf("%f\n",drop_dens);
         eqn_params->rho_l = drop_dens;
-        CursorAfterString(infile,"Enter coefficient for condensation:");
-        fscanf(infile,"%lf",&eqn_params->K);
-        (void) printf("%20.19f\n",eqn_params->K);
 
 	if (eqn_params->prob_type == PARTICLE_TRACKING)
 	{
@@ -334,8 +542,9 @@ extern void initWaterDrops(
             break;
         case 'W':
         case 'w':
-            (void) printf("Liquid water state not yet implemented\n");
-            clean_up(ERROR);
+            w_type = ICE_PARTICLE_BOUNDARY;
+            iFparams->m_comp1 = SOLID_COMP;
+            iFparams->m_comp2 = LIQUID_COMP2;
             break;
         default:
             (void) printf("Unknow phase state of water\n");
@@ -350,21 +559,6 @@ extern void initWaterDrops(
         fscanf(infile,"%lf",&drop_dens);
         (void) printf("%f\n",drop_dens);
 	eqn_params->rho_l = drop_dens;
-
-        CursorAfterString(infile,"Enter coefficient for condensation:");
-        fscanf(infile,"%lf",&eqn_params->K);
-        (void) printf("%20.19f\n",eqn_params->K);
-
-	if (eqn_params->prob_type == PARTICLE_TRACKING)
-	    FT_VectorMemoryAlloc((POINTER*)&particle_array,
-				      num_drops,sizeof(PARTICLE));
-	else
-	{
-	    FT_VectorMemoryAlloc((POINTER*)&gindex,num_drops,sizeof(int));
-            FT_VectorMemoryAlloc((POINTER*)&radius,num_drops,sizeof(double));
-            FT_MatrixMemoryAlloc((POINTER*)&center,
-					num_drops,MAXD,sizeof(double));
-	}
 
         (void) printf("Two methods for initialization:\n");
         (void) printf("\tPrompt initialization (P)\n");
@@ -403,7 +597,7 @@ extern void initWaterDrops(
             fscanf(infile,"%lf",&sigma);
             (void) printf("%f\n",sigma);
 	    if (eqn_params->prob_type == PARTICLE_TRACKING)
-		initRandomParticles(front,particle_array,num_drops,r_bar,sigma);
+		particle_array = initRandomParticles(front,num_drops,r_bar,sigma);
 	    else
                 initRandomDrops(front,center,radius,gindex,&num_drops,r_bar,sigma);
             break;
@@ -469,33 +663,24 @@ extern void initWaterDrops(
                     }
             }
         }
-	if (eqn_params->prob_type != PARTICLE_TRACKING)
-            FT_FreeThese(3,radius,gindex,center);
-        if (debugging("init_intfc"))
-        {
-            if (dim == 2)
-                xgraph_2d_intfc("test.xg",front->interf);
-            else if (dim == 3)
-                gview_plot_interface("init_intfc",front->interf);
-        }
 }       /* end initWaterDrops */
 
-static void initRandomParticles(
+static PARTICLE *initRandomParticles(
 	Front *front,
-	PARTICLE* particle_array,
 	int &num_drops,
 	double r_bar,
 	double sigma)
 {
-        int i,j;
+        int i,j,count;
         GAUSS_PARAMS gauss_params;
         UNIFORM_PARAMS uniform_params;
 	PARAMS* eqn_params = (PARAMS*)front->extra2;
+	PARTICLE* particle_array;
         unsigned short int xsubi[3];
         double x,dist,R;
         int dim = FT_Dimension();
-	double *local_L = front->rect_grid->L;
-	double *local_U = front->rect_grid->U;
+	double *local_L = front->pp_grid->Zoom_grid.L;
+	double *local_U = front->pp_grid->Zoom_grid.U;
         double *L = eqn_params->L; /*constrain for particles position*/
         double *U = eqn_params->U;
 	double nL[MAXD], nU[MAXD]; /*intersection between constrain and subdomain*/
@@ -517,6 +702,9 @@ static void initRandomParticles(
 	}
 	num_drops *= nArea/cArea;
 	num_drops  = (int)num_drops;
+
+	FT_VectorMemoryAlloc((POINTER*)&particle_array,
+				      num_drops,sizeof(PARTICLE));
         xsubi[0] = 10;
         xsubi[1] = 100;
         xsubi[2] = 1000;
@@ -535,10 +723,21 @@ static void initRandomParticles(
             }
             particle_array[i].radius = gauss_center_limit((POINTER)&gauss_params,xsubi);
             particle_array[i].R0 = particle_array[i].radius;
-	    particle_array[i].Gindex = i;
 	    particle_array[i].flag = YES;
 	}   	
 	eqn_params->num_drops = num_drops;
+	count = 1;
+	for (i = 0 ; i < dim; i++)
+	    count *= eqn_params->Nclip[i];
+	if (count == 1)
+	    setParticleGlobalIndex(particle_array,eqn_params->num_drops);
+	else
+	    setParticleGroupIndex(particle_array,eqn_params->num_drops,dim,
+                                  eqn_params->Nclip,
+                                  front->pp_grid->Global_grid.L,
+                                  front->pp_grid->Global_grid.U);
+	return particle_array;
+
 	if (debugging("particles"))
 	{
 	    printf("In processor %d\n",pp_mynode());

@@ -1972,7 +1972,7 @@ LIB_LOCAL void fprint_length0_on_curve(
 	(void) fprintf(file,"%-10s ","Bond");
 	for (btris = Btris(b), i = 0; btris && *btris; ++btris, ++i)
 	{
-	    (void) sprintf(s,"length0",i);
+	    (void) sprintf(s,"length0");
 	    (void) fprintf(file,"%-10s",s);
 	}
 	(void) fprintf(file,"\n");

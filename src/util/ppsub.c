@@ -233,7 +233,7 @@ EXPORT	int	pp_numnodes(void)
 */
 
 #if defined(__MPI__)
-LOCAL	size_t MSG_BUF_SIZE = 8000000;
+LOCAL	size_t MSG_BUF_SIZE = 100000000;
 #endif /* defined(__MPI__) */
 
 /*ARGSUSED*/
@@ -265,7 +265,8 @@ EXPORT	void	u_pp_send(
 {
 #if defined(__MPI__)
 	static	byte	*msg_buf = NULL;
-	int	mpi_return_status;
+	static  int 	 MAX_BUF_SIZE = 0;
+	int	mpi_return_status = 0;
 #endif /* defined(__MPI__) */
 
 	if (debugging("pp_clock"))
@@ -297,9 +298,11 @@ EXPORT	void	u_pp_send(
 		clean_up(ERROR);
 	    }
 	}
+	/*bug find here*/
+	/*if MSG_BUF_SIZE change, reallocation of msg_buf needed*/
+
 	mpi_return_status = MPI_Bsend(buf,(int)len,MPI_BYTE,
 				      node,tag,FronTier_COMM);
-
 	if (mpi_return_status != MPI_SUCCESS)
 	{
 	    screen("ERROR in u_pp_send(), MPI_Send() failed, "

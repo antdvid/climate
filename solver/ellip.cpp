@@ -208,7 +208,6 @@ void ELLIPTIC_SOLVER::solve1d(double *soln)
 	start_clock("Petsc Solver");
 	if (use_neumann_solver)
 	{
-	    (void) printf("\nUsing Neumann Solver!\n");
 	    if (size < 4)
 	    {
 	    	(void) printf("Isolated small region for solve1d()\n");
@@ -615,7 +614,6 @@ void ELLIPTIC_SOLVER::solve3d(double *soln)
 	start_clock("Petsc Solver");
 	if (use_neumann_solver)
 	{
-	    printf("\nUsing Neumann Solver!\n");
 	    if (size < 8)
 	    {
 	    	(void) printf("Isolated small region for solve3d()\n");
@@ -688,7 +686,9 @@ void ELLIPTIC_SOLVER::solve3d(double *soln)
 		icrds_min[2] = k;
 	    }
 	}
+	start_clock("ExchangeArrayBufferEllip");
 	FT_ParallelExchGridArrayBuffer(soln,front,NULL);
+	stop_clock("ExchangeArrayBufferEllip");
 	pp_global_max(&max_soln,1);
 	pp_global_min(&min_soln,1);
 

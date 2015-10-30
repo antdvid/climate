@@ -9,23 +9,24 @@ Upper boundary in 1-th dimension: PERIODIC_BOUNDARY
 Lower boundary in 2-th dimension: PERIODIC_BOUNDARY
 Upper boundary in 2-th dimension: PERIODIC_BOUNDARY
 
-Max time: 10.0
-Max step: 10 
-Print interval: 1.0 
-Movie frame interval: 0.2
+Max time: 40.0
+Max step: 10000
+Print interval: 2.0 
+Movie frame interval: 0.8 
 CFL factor: 0.75
 Redistribution interval: 5
 Type yes to turn off auto-redistribution: y
 
 Enter problem type: PARTICLE_TRACKING 
 ******************Initial phase conditions***********
-phase 1: vapor
-phase 2: droplet
-****************************************************
-Enter number of phases: 1
-
-Enter ambient temperature of phase 1: 270
-Enter diffusivity of phase 1: 0.0000214
+Enter initial temperature(K): 270 
+Enter initial vapor mixing ratio(g/kg): 3.2
+Enter D: 0.0000216
+Enter Lh: 2500000.0
+Enter Rv: 461.5
+Enter Rd: 287.0
+Enter Kc: 0.0238
+Enter Cp: 1005.0
 
 ********************Numerical scheme**************
 Choose numerical scheme
@@ -35,8 +36,8 @@ Choose numerical scheme
 Enter scheme: CN 
 Enter reference pressure(Pa): 98000 
 Enter reference temperature(K): 270
-Enter lower bound for droplets position: 0.3 0 0
-Enter upper bound for droplets position: 0.7 1 1
+Enter lower bound for droplets position: 0.0 0.0 0.0
+Enter upper bound for droplets position: 1.0 1.0 1.0
 
 ********************Droplets********************* 
 Water phase state can be
@@ -45,19 +46,18 @@ Water phase state can be
 Enter phase state of water drop: I
 Enter number of water drops: 10000000 
 Enter density of water drops: 1000
-Enter coefficient for condensation: 0.0000000001
 Two methods for initialization:
         Prompt initialization (P)
         Random initialization (R)
 Enter method of initialization: R
-Enter mean radius of water drop: 0.00001 
+Enter mean radius of water drop: 0.000020 
 Enter standard deviation of radius: 0
 
 ****************Fluid Parameters*****************
 Enter projection type: SIMPLE
 Enter advection order: 4
 Enter elliptic method: S
-Enter density and viscosity of the fluid: 1 0.000015
+Enter density and viscosity of the fluid: 1.0 0.000015
 Enter gravity: 0 0 -9.8
 
 *******************Movie option*****************
@@ -68,14 +68,15 @@ Type y to make movie of pressure: y
 Type y to make movie of vorticity: y
 Type y to make movie of velocity: y
 Type y to make movie of solute: n
-Type y to make movie of temperature: y
-Type y to make movie of vapor mixing ratio: y
-Type y to make vector velocity field movie: y
+Type y to make movie of temperature: n 
+Type y to make movie of vapor mixing ratio: n
+Type y to make movie of particles: n
+Type y to make vector velocity field movie: n
 
 ************Debugging options*****************
 
-Enter yes for debugging: no
-Enter the debugging string: ttrace
+Enter yes for debugging: no 
+Enter the debugging string: trace
 Enter the debugging string: tPETSc
 Enter the debugging string: particles 
 Enter the debugging string: tCLOCK

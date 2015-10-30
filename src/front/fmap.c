@@ -2948,7 +2948,7 @@ EXPORT	void FT_TimeControlFilter(Front *front)
         {
             front->time_limit_reached = YES;
         }
-	front->dt = new_dt;
+	/*front->dt = new_dt;*/
 }	/* end FT_TimeControlFilter */
 
 EXPORT void FT_AddTimeStepToCounter(Front *front)
