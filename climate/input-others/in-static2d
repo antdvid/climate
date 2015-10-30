@@ -1,0 +1,90 @@
+Domain limit in 0-th dimension: 0 0.512 
+Domain limit in 1-th dimension: 0 0.512
+Computational grid: 128 128 
+Lower boundary in 0-th dimension: PERIODIC_BOUNDARY
+Upper boundary in 0-th dimension: PERIODIC_BOUNDARY
+Lower boundary in 1-th dimension: PERIODIC_BOUNDARY
+Upper boundary in 1-th dimension: PERIODIC_BOUNDARY
+
+Max time: 60.0
+Max step: 100000
+Print interval: 1.0
+Movie frame interval: 1.0 
+CFL factor: 0.75
+Redistribution interval: 5
+Type yes to turn off auto-redistribution: y
+
+Enter problem type: CUSTOM 
+Enter yes to consider buoyancy: no
+Enter yes to consider reference pressure: yes
+Enter yes to consider sedimentation: no
+Enter yes to consider condensation: yes
+Enter initial velocity state: zero
+Enter initial vapor state: LR_STATE
+Enter initial particle state: RANDOM
+******************Initial phase conditions***********
+Enter initial temperature(K): 270.75
+Enter initial vapor mixing ratio(g/kg): 0.03138
+Enter initial velocity(m/s): 0.12
+Enter D: 0.0000216
+Enter Lh: 2500000.0
+Enter Rv: 461.5
+Enter Rd: 287.0
+Enter Kc: 0.0238
+Enter Cp: 1005.0
+Enter lower bound for droplets position: 0.1 0 
+Enter upper bound for droplets position: 0.4 0.512
+Enter number of clips in direction: 1 4
+
+********************Numerical scheme**************
+Choose numerical scheme
+        UNSPLIT_EXPLICIT (EX)
+        UNSPLIT_IMPLICIT (IM)
+        CRANK_NICOLSON (CN)
+Enter scheme: CN 
+Enter reference pressure(Pa): 82844.139706
+Enter yes to enable volume force: no 
+
+********************Droplets********************* 
+Water phase state can be
+        Ice Particle (I)
+        Liquid Water Drop (W)
+Enter phase state of water drop: I
+Enter number of water drops: 20535000
+Enter density of water drops: 1000
+Two methods for initialization:
+        Prompt initialization (P)
+        Random initialization (R)
+Enter method of initialization: R
+Enter mean radius of water drop: 0.000010
+Enter standard deviation of radius: 0
+
+****************Fluid Parameters*****************
+Enter projection type: SIMPLE
+Enter advection order: 4
+Enter elliptic method: S
+Enter density and viscosity of the fluid: 1.0 0.000015
+Enter gravity: 0 0
+
+*******************Movie option*****************
+Type y to make yz cross section movie: n
+Type y to make xz cross section movie: n
+Type y to make xy cross section movie: n
+Type y to make movie of pressure: n 
+Type y to make movie of vorticity: n 
+Type y to make movie of velocity: n
+Type y to make movie of solute: n
+Type y to make movie of temperature: n
+Type y to make movie of vapor mixing ratio: n
+Type y to make movie of particles: n
+Type y to make vector velocity field movie: n
+
+************Debugging options*****************
+
+Enter yes for debugging: no 
+Enter the debugging string: tvolume_force 
+Enter the debugging string: trace 
+Enter the debugging string: PETSc
+Enter the debugging string: tparticles 
+Enter the debugging string: tCLOCK
+
