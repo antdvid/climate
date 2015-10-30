@@ -1,13 +1,3 @@
-/**********************************************************************
- * 		liquid.h
- * the code is a direct modification of the code by Leveque[1].
- *
- * References:
- * [1] R.J. Leveque, High-resolution conservative algorithms for
- *     advection in incompressible flow.
- *
- **********************************************************************/
-
 #include <FronTier.h>
 #include <fftw3.h>
 #include <vector>
