@@ -3870,7 +3870,7 @@ static void scatterParallelData(
 			}
 			if (id != 0)
 			     MPI_Send((POINTER)local_var,local_size,MPI_DOUBLE,id,fft_tag,MPI_COMM_WORLD);
-			    /*pp_send(fft_tag,(POINTER)local_var,local_size*sizeof(double),id);*/	
+			    //pp_send(fft_tag,(POINTER)local_var,local_size*sizeof(double),id);
 		    }
 		}
 		else

@@ -1,17 +1,16 @@
 #!/bin/bash
-#PBS -l nodes=node13:ppn=8
-#PBS -l mem=10000mb
-#PBS -l walltime=120:00:00
-#PBS -j oe
+#$ -pe mpi 16 
+#$ -q nodes.q
+#$ -j y
+#$ -cwd 
 
 #directory of excutable
-DIR="/home/zgao/FronTier++_climate/climate"
+DIR=`pwd`
 echo $DIR
 
+source /etc/profile.d/modules.sh
+source /home/zgao/.bashrc
 module load intel
-module load openmpi
+module load openmpi-1.8/intel
 
-#run options
-echo input file $DIR/in-$prob
-echo output directory $DIR/out-$prob
-mpirun -np 8 --bind-to-core --bysocket $DIR/climate -d 3 -p 2 2 2 -i $DIR/in-$prob -o $DIR/out-$prob -log_summary
+/act/openmpi-1.8/intel/bin/mpirun -np 8 $DIR/climate -d 3 -p 2 2 2 -i $DIR/in-$prob -o $DIR/out-$prob

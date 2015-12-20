@@ -3207,8 +3207,8 @@ EXPORT	boolean	check_valid_point(
 	    plist[np++] = Point_of_tri(ptris[n])[Prev_m3(k)];
 	    if(np >= MAX_TRIS_IN_POINT)
 	    {
-		printf("ERROReck_valid_point ",
-			"too many tris in one point.\n");
+		printf("ERROReck_valid_point \ 
+			too many tris in one point.\n");
 		clean_up(ERROR);
 	    }
 	}
@@ -3216,8 +3216,8 @@ EXPORT	boolean	check_valid_point(
 	    for(m=n+1; m<np; m++)
 		if(plist[m] == plist[n])
 		{
-		    printf("WARNING check_valid_tris"
-		    	   "double edge is found.\n");
+		    printf("WARNING check_valid_tris \
+		    	   double edge is found.\n");
 		    print_general_vector("p=", Coords(p), 3, "\n");
 		    tecplot_tris("chk_db_edge", ptris, ntris);
 		    

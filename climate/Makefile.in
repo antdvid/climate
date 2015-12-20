@@ -8,7 +8,7 @@ libincs = @otherlibsinc@
 libs = @otherlibs@
 build_cpu = @build_cpu@
 
-FFTW_DIR = /usr/local/pkg/fftw
+FFTW_DIR = /opt/fftw
 FFTW_INCL_DIR = -I$(FFTW_DIR)/include
 FFTW_LIB_DIR = $(FFTW_DIR)/lib
 incsloc = -I. -I../iFluid -I../solver -I../include $(FFTW_INCL_DIR) 
