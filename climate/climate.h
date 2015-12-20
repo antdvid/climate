@@ -1,9 +1,9 @@
 #include <FronTier.h>
-#include <fftw3.h>
 #include <vector>
 #include <petscksp.h>
 #include <assert.h>
 #include <iFluid.h>
+#include "fftw3.h"
 
 #define         LIQUID_COMP2           3
 #define         SOLID_COMP             1

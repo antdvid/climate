@@ -526,39 +526,14 @@ AC_SUBST(build_linpak, ${build_linpak})
 
 
 if test $gastest = "no"; then
-filelist='Makefile 
+filelist='Makefile
 src/Makefile 
 src/util/Makefile 
 src/front/Makefile 
 src/intfc/Makefile 
-airfoil/Makefile
-parachute/Makefile
-sprModel/Makefile
-subsurf/Makefile
-crystal/Makefile
-example/Makefile
-example3d/Makefile
-iTaps/Makefile
-finance/Makefile
-melting/Makefile
-curvature/Makefile
-cell/Makefile
-pde/Makefile
-MonteCarlo/Makefile
-timeSeries/Makefile
 iFluid/Makefile
-frgb/Makefile
 climate/Makefile
-poisson/Makefile
-cFluid/Makefile
-wings/Makefile
-cim/Makefile
-inverse/Makefile
 solver/Makefile
-weno/Makefile
-proj/Makefile
-src/pak/linpak/Makefile
-src/pak/blas/Makefile
 devel-deps.inc
 iMesh-Defs.inc'
 fi
@@ -567,52 +542,11 @@ if test $gastest = "yes"; then
 filelist='Makefile 
 src/Makefile 
 src/util/Makefile 
-src/pak/Makefile 
-src/pak/odepack/Makefile 
-src/pak/dierckx/Makefile 
-src/pak/linpak/Makefile 
-src/pak/blas/Makefile 
-src/pak/sn_ellip/Makefile 
-src/driver/Makefile 
 src/front/Makefile 
-src/hyp/Makefile 
 src/intfc/Makefile 
-src/tri/Makefile 
-src/gas/Makefile 
-src/gas/gbifur/Makefile 
-src/gas/geos/Makefile 
-src/gas/ghyp/Makefile 
-src/gas/ginit/Makefile 
-src/gas/gintfc/Makefile 
-src/gas/gnode/Makefile 
-src/gas/gprop/Makefile 
-src/gas/gprt/Makefile 
-src/gas/gstate/Makefile 
-example/Makefile
-example3d/Makefile
-iTaps/Makefile
-melting/Makefile
-finance/Makefile
-curvature/Makefile
-cell/Makefile
-pde/Makefile
-MonteCarlo/Makefile
-timeSeries/Makefile
 iFluid/Makefile
-frgb/Makefile
 climate/Makefile
-subsurf/Makefile
-airfoil/Makefile
-parachute/Makefile
-sprModel/Makefile
-crystal/Makefile
-poisson/Makefile
-cFluid/Makefile
-wings/Makefile
-cim/Makefile
-inverse/Makefile
 solver/Makefile
-weno/Makefile
 proj/Makefile
 devel-deps.inc
 iMesh-Defs.inc'
@@ -620,8 +554,6 @@ iMesh-Defs.inc'
 mkdir -p lib/${build_cpu}/gas
 mkdir -p src/pak/odepack/${build_cpu}
 mkdir -p src/pak/dierckx/${build_cpu}
-mkdir -p src/pak/blas/${build_cpu}
-mkdir -p src/pak/linpak/${build_cpu}
 mkdir -p src/driver/${build_cpu}
 mkdir -p src/gas/${build_cpu}
 mkdir -p src/gas/gbifur/${build_cpu}

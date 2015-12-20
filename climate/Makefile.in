@@ -7,7 +7,11 @@ incs =  @ftlibincs@
 libincs = @otherlibsinc@
 libs = @otherlibs@
 build_cpu = @build_cpu@
-incsloc = -I. -I../iFluid -I../solver -I../include -I/home/zgao/pkg/fftw/include
+
+FFTW_DIR = /usr/local/pkg/fftw
+FFTW_INCL_DIR = -I$(FFTW_DIR)/include
+FFTW_LIB_DIR = $(FFTW_DIR)/lib
+incsloc = -I. -I../iFluid -I../solver -I../include $(FFTW_INCL_DIR) 
 
 PETSC = yes
 PETSC_ARCH=@PETSC_ARCH@
@@ -63,11 +67,11 @@ clminit.o : climate.h ../iFluid/iFluid.h clminit.cpp
 	${CXX} -c clminit.cpp $(incsloc) $(incs) ${Petsc_Include}
 
 fft.o : fft.cpp
-	${CXX} -c fft.cpp -I/home/zgao/pkg/fftw/include
+	${CXX} -c fft.cpp $(FFTW_INCL_DIR)
 
 climate: ../iFluid/iFluid.h climate.h climate.cpp weno.o iFsub.o clmsub.o clminit.o vcartsn.o ../lib/libiF.a fft.o
 	${CXX} -c climate.cpp $(incsloc) $(incs) ${Petsc_Include}
-	$(CXX) -o climate climate.o clmsub.o weno.o fft.o iFsub.o vcartsn.o clminit.o -I../include -L../lib/${build_cpu} -liF ${Petsc_Lib} -L../lib/${build_cpu} -lFronTier $(libincs)  $(libs) ${F77_LIBS} -L/home/zgao/pkg/fftw/lib -lfftw3
+	$(CXX) -o climate climate.o clmsub.o weno.o fft.o iFsub.o vcartsn.o clminit.o -I../include -L../lib/${build_cpu} -liF ${Petsc_Lib} -L../lib/${build_cpu} -lFronTier $(libincs)  $(libs) ${F77_LIBS} -L${FFTW_LIB_DIR} -lfftw3
 
 ../lib/libiF.a: solver.o hyperb.o parab.o cim_parab.o ellip.o cim_ellip.o dual_ellip.o iFbasic.o iFcartsn2d.o iFcartsn3d.o
 	$(AR) cru libiF.a $^
