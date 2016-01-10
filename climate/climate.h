@@ -251,7 +251,7 @@ public:
 	void augmentMovieVariables(const char*);
 	void checkOutput();
 	void checkField();
-	void recordField(char *, const char *);
+	void recordField(double *, const char *);
 	void recordPDF(char *, const char *);
 	void recordCondensationRate(char*);
 	void recordRadius(char *);
@@ -278,7 +278,6 @@ public:
 	void setInitialCondition(void);
 	void (*getInitialVaporState)(COMPONENT*,double*,PHASE_FIELD*,int,int,PARAMS*);
 	void (*getInitialTempState)(COMPONENT*,double*,PHASE_FIELD*,int,int,PARAMS*);
-	void setParallelVapor(void);
 	void initPresetParticles();
 
 	void setIndexMap(COMPONENT);
@@ -319,6 +318,7 @@ public:
 	void computeVolumeForceLinear();
 	double computeDspRate();
 	double computeDspRateLinear();
+	int write_hdf5_field(double*,const char*,const char*);
 };
 
 /*weno scheme for computing advection term*/

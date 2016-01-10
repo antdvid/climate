@@ -331,7 +331,7 @@ void PETSc::Solve_withPureNeumann_GMRES(void)
 
 void PETSc::Solve_withPureNeumann(void)
 {
-	Solve_withPureNeumann_ML();
+	Solve_withPureNeumann_HYPRE();
 	//Solve_withPureNeumann_GMRES();
 	//Solve_withPureNeumann_BCGSL();
 }	/* end Solve_withPureNeumann */

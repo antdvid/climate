@@ -263,113 +263,6 @@ void VCARTESIAN::setInitialCondition(void)
 	printf("qs = %f, qv0 = %20.14f\n",eqn_params->qs,eqn_params->qv0);
 }	/* end setInitialCondition */
 
-
-void VCARTESIAN::setParallelVapor(void)
-{
-        FILE *infile;
-        int i,j,id,k,l,index,G_index;
-        char fname[100];
-        COMPONENT comp;
-        double coords[MAXD];
-        int size = (int)cell_center.size();
-        int myid = pp_mynode();
-        int numprocs = pp_numnodes();
-
-        int G_icoords[MAXD],pp_icoords[MAXD],icoords[MAXD];
-        int local_gmax[MAXD], global_gmax[MAXD];
-        int G_size, L_size;
-        PP_GRID *pp_grid = front->pp_grid;
-        double *local_L = pp_grid->Zoom_grid.L;
-        double *local_U = pp_grid->Zoom_grid.U;
-        double *GV_buff, *V_buff;
-	
-	if(debugging("trace"))
-	    printf("Entering setParallelVapor()\n");
-        for (i = 0; i < dim; i++)
-        {
-            global_gmax[i] = pp_grid->Global_grid.gmax[i]-1;
-            local_gmax[i] = pp_grid->Zoom_grid.gmax[i]-1;
-        }
-        FT_MakeGridIntfc(front);
-        setDomain();
-        G_size = 1;
-        L_size = 1;
-        for (i = 0; i < dim; i++)
-        {
-            G_size = G_size * (global_gmax[i]+1);
-            L_size = L_size * (top_gmax[i]+1);
-        }
-        uni_array(&V_buff,L_size,sizeof(double));
-        if (myid == 0)
-        {
-            uni_array(&GV_buff,G_size,sizeof(double));
-	    /*setInitialVapor(front,LIQUID_COMP,GV_buff);*/
-	    /*Please set GV_buff before sending out*/
-            for (id = 0; id < numprocs; id++)
-            {
-                find_Cartesian_coordinates(id,pp_grid,pp_icoords);
-		switch (dim)
-		{
-		    case 2:
-                	for (j = jmin; j <= jmax; ++j)
-                	for (i = imin; i <= imax; ++i)
-                	{
-                    	    icoords[0] = i;
-                    	    icoords[1] = j;
-                    	    G_icoords[0] = pp_icoords[0]*(local_gmax[0]+1)+icoords[0]-imin;
-                    	    G_icoords[1] = pp_icoords[1]*(local_gmax[1]+1)+icoords[1]-jmin;
-                    	    G_index = d_index(G_icoords,global_gmax,dim);
-                    	    index = d_index(icoords,top_gmax,dim);
-                    	    V_buff[index] = GV_buff[G_index];
-                	}
-			break;
-		    case 3:
-			for (k = kmin; k <= kmax; ++k)
-                	for (j = jmin; j <= jmax; ++j)
-                	for (i = imin; i <= imax; ++i)
-                	{
-                    	    icoords[0] = i;
-                    	    icoords[1] = j;
-                    	    icoords[2] = k;
-                    	    G_icoords[0] = pp_icoords[0]*(local_gmax[0]+1)+icoords[0]-imin;
-                    	    G_icoords[1] = pp_icoords[1]*(local_gmax[1]+1)+icoords[1]-jmin;
-                    	    G_icoords[2] = pp_icoords[2]*(local_gmax[2]+1)+icoords[2]-kmin;
-                    	    G_index = d_index(G_icoords,global_gmax,dim);
-                    	    index = d_index(icoords,top_gmax,dim);
-                    	    V_buff[index] = GV_buff[G_index];
-                	}
-			break;
-            	    Default:
-                  	printf("Unknown dim = %d\n",dim);
-                	clean_up(ERROR);
-		}
-                if (id == 0)
-                {
-                    for (i = 0; i < L_size; i++)
-                        field->vapor[i] = V_buff[i];
-                }
-                else
-                {
-                    pp_send(1,(POINTER)(V_buff),sizeof(double)*L_size,id);
-                }
-            }
-            FT_FreeThese(1,GV_buff);
-        }
-        else
-        {
-            pp_recv(1,0,(POINTER)(V_buff),sizeof(double)*L_size);
-            for (i = 0; i < L_size; i++)
-            {
-                field->vapor[i] = V_buff[i];
-            }
-        }
-
-        FT_FreeThese(1,V_buff);
-        setAdvectionDt();
-	if(debugging("trace"))
-	    printf("Leaving setParallelVapor()\n");
-}
-
 void VCARTESIAN::setIndexMap(COMPONENT sub_comp)
 {
 	static boolean first = YES;
@@ -2822,14 +2715,14 @@ void VCARTESIAN::checkField()
 }
 
 
-void VCARTESIAN::recordField(char *outname, const char *varname)
+void VCARTESIAN::recordField(double* varfield, const char *varname)
 {
 	int i, j, k, index;
 	FILE* outfile;
 	char filename[256];
 	double **vel = field->vel;
 	
-        sprintf(filename, "%s/record-%s",outname,varname);
+        sprintf(filename, "%s/record-%s",OutName(front),varname);
         if (!create_directory(filename,NO))
         {
             printf("Cannot create directory %s\n",filename);
@@ -2837,60 +2730,9 @@ void VCARTESIAN::recordField(char *outname, const char *varname)
         }
 	pp_gsync();
 
-	if (pp_numnodes() > 1)
-	{
-	    sprintf(filename, "%s/record-%s-nd%03d",filename,varname,pp_mynode());
-	    create_directory(filename,YES);
-	}
         sprintf(filename,"%s/%s-%4.2f",filename,varname,front->time);
-        outfile = fopen(filename,"w");
-        switch (dim)
-        {
-            case 2:
-                for (j = jmin; j <= jmax; j++)
-                for (i = imin; i <= imax; i++)
-                {
-                    index = d_index2d(i,j,top_gmax);
-		    if(strcmp(varname,"vapor") == 0)
-                        fprintf(outfile,"%f\n",field->vapor[index]);
-		    else if(strcmp(varname,"supersat") == 0)
-			fprintf(outfile,"%f\n",field->supersat[index]);
-		    else if(strcmp(varname,"temperature") == 0)
-			fprintf(outfile,"%f\n",field->temperature[index]);
-		    else if(strcmp(varname,"mrad") == 0)
-			fprintf(outfile,"%15.14f\n",field->mrad[index]);
-		    else if(strcmp(varname,"velocity") == 0)
-			fprintf(outfile,"%f  %f\n",vel[0][index],vel[1][index]);
-		    else
-			printf("WARNING: Unknown field: %s\n",varname);
-			
-                }
-                break;
-
-                case 3:
-                for (k = kmin; k <= kmax; k++)
-                for (j = jmin; j <= jmax; j++)
-                for (i = imin; i <= imax; i++)
-                {
-		    index = d_index3d(i,j,k,top_gmax);
-                    if(strcmp(varname,"vapor") == 0)
-                        fprintf(outfile,"%f\n",field->vapor[index]);
-                    else if(strcmp(varname,"supersat") == 0)
-                        fprintf(outfile,"%f\n",field->supersat[index]);
-                    else if(strcmp(varname,"temperature") == 0)
-                        fprintf(outfile,"%f\n",field->temperature[index]);
-                    else if(strcmp(varname,"mrad") == 0)
-                        fprintf(outfile,"%15.14f\n",field->mrad[index]);
-                    else if(strcmp(varname,"velocity") == 0)
-                        fprintf(outfile,"%f  %f  %f\n",
-                            vel[0][index],vel[1][index],vel[2][index]);
-                    else
-                        printf("WARNING: Unknown field: %s\n",varname);
-                }
-                break;
-        }
-	fclose(outfile);
-	return;
+	write_hdf5_field(varfield,filename,varname);
+ 	return;
 }
 
 void VCARTESIAN::recordCondensationRate(char* outname){
@@ -3399,7 +3241,7 @@ void VCARTESIAN::initMovieVariables()
                                 "supersat",0,field->supersat,
 				getStateSuper,0,0);
 	    FT_AddHdfMovieVariable(front,NO,YES,SOLID_COMP,
-                                "cloud",0,field->cloud,
+                                "drops",0,field->drops,
 				getStateSuper,0,0);
  	    FT_AddHdfMovieVariable(front,NO,YES,SOLID_COMP,
                                 "temperature",0,field->temperature,
@@ -4494,5 +4336,133 @@ void VCARTESIAN::output()
             eqn_params->Nclip[2] != 1)
             recordGroupParticles();
         if(eqn_params->is_bigdata)
+	{
+	    recordField(field->drops,"num");
+	    recordField(field->vel[0],"xvel");
+	    recordField(field->vel[1],"yvel");
+	    recordField(field->vel[2],"zvel");
+	    recordField(field->supersat,"supersat");
             recordParticles();
+	}
 }
+
+
+#include <petscdm.h>
+#include <petscdmda.h>
+#include <petscsys.h>
+#include <petscviewerhdf5.h>
+int VCARTESIAN::write_hdf5_field(double* field,const char* fname,const char* varname)
+{
+	PetscErrorCode ierr;
+	RECT_GRID* global_grid = &(front->pp_grid->Global_grid);
+	int *global_gmax = global_grid->gmax;
+	int *pp_gmax = front->pp_grid->gmax;
+	double* GL = global_grid->L;
+	double* GU = global_grid->U;
+  	int myid = pp_mynode();
+	int num_nodes = pp_numnodes();
+	PetscScalar    **res_ptr2d;
+	PetscScalar    ***res_ptr3d;
+	Vec res;
+	DM             daND;
+
+	static boolean first = YES;
+	static int* n_in_dir;
+
+        if (first)
+        {
+            first = NO;
+            FT_VectorMemoryAlloc((POINTER*)&n_in_dir,num_nodes,sizeof(int));
+        }
+	/* Build of the DMDA */
+	switch (dim)
+	{
+	    case 2:
+		ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
+		       DMDA_STENCIL_STAR,global_gmax[0],global_gmax[1],
+		       pp_gmax[0],pp_gmax[1],1,1,NULL,NULL,&daND);CHKERRQ(ierr);	
+		break;
+	    case 3:
+		ierr = DMDACreate3d(PETSC_COMM_WORLD, 
+				    DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,
+                       		    DMDA_STENCIL_STAR,
+				    global_gmax[0],global_gmax[1],global_gmax[2],
+                       		    pp_gmax[0],pp_gmax[1],pp_gmax[2],
+				    1,1,NULL,NULL,NULL,&daND);CHKERRQ(ierr);
+		break;
+	    default:
+		printf("Invalid dim = %d\n",dim);
+		clean_up(ERROR);
+	}
+	/* Set the coordinates */
+  	DMDASetUniformCoordinates(daND, GL[0],GU[0],GL[1],GU[1],GL[2],GU[2]);
+	/* Declare res as a DMDA component */
+  	ierr = DMCreateGlobalVector(daND,&res);CHKERRQ(ierr);
+  	ierr = PetscObjectSetName((PetscObject) res, varname);CHKERRQ(ierr);		
+	
+	/* Initialize vector res with a constant value (=1) */
+  	ierr = VecSet(res,1);CHKERRQ(ierr);
+
+	/* Get the coordinates of the corners for each process */
+	int lmin[3], lmax[3], icorner[3], pp_coords[3];
+	lmin[0] = imin; lmax[0] = imax;
+	lmin[1] = jmin; lmax[1] = jmax;
+	lmin[2] = kmin; lmax[2] = kmax;
+	find_Cartesian_coordinates(myid,front->pp_grid,pp_coords);
+	for (int i = 0; i < num_nodes; ++i) 
+	    n_in_dir[i] = 0;
+	for (int l = 0; l < dim; ++l){
+            n_in_dir[myid] = lmax[l]-lmin[l]+1;
+            pp_global_imax(n_in_dir,num_nodes);   
+            icorner[l] = 0;
+	    int tmp_icoords[3];
+	    memcpy(tmp_icoords,pp_coords,3*sizeof(int));
+            for (int i = 1; i <= pp_coords[l]; i++)
+	    {
+		tmp_icoords[l] = i-1;
+		int his_id = domain_id(tmp_icoords,pp_gmax,dim);
+                icorner[l] += n_in_dir[his_id];
+	    }
+	}
+	/* Build the result profile */
+	switch(dim){
+		case 2:
+  		    ierr = DMDAVecGetArray(daND,res,&res_ptr2d);CHKERRQ(ierr);
+  		    for (int j=lmin[1]; j<=lmax[1]; j++)
+    		    for (int i=lmin[0]; i<=lmax[0]; i++) 
+		    {
+        	        int index = d_index2d(i,j,top_gmax);
+        	        res_ptr2d[icorner[1]+j-lmin[1]][icorner[0]+i-lmin[0]]=field[index];
+    		    }
+  		    ierr = DMDAVecRestoreArray(daND,res,&res_ptr2d);CHKERRQ(ierr);
+		    break;
+		case 3:
+		    ierr = DMDAVecGetArray(daND,res,&res_ptr3d);CHKERRQ(ierr);
+                    for (int k=lmin[2]; k<=lmax[2]; k++)
+                    for (int j=lmin[1]; j<=lmax[1]; j++)
+                    for (int i=lmin[0]; i<=lmax[0]; i++)
+                    {
+                        int index = d_index3d(i,j,k,top_gmax);
+                        res_ptr3d[icorner[2]+k-lmin[2]][icorner[1]+j-lmin[1]][icorner[0]+i-lmin[0]]=field[index];
+                    }
+                    ierr = DMDAVecRestoreArray(daND,res,&res_ptr3d);CHKERRQ(ierr);
+                    break;
+	  	default:
+		    printf("Invalid dim = %d\n",dim);
+		    clean_up(ERROR);
+	}
+	
+	/* Create the HDF5 viewer */
+	PetscViewer    H5viewer;
+  	ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,fname,FILE_MODE_WRITE,&H5viewer);CHKERRQ(ierr);
+  	ierr = PetscViewerSetFromOptions(H5viewer);CHKERRQ(ierr);
+
+  	/* Write the H5 file */
+  	ierr = VecView(res,H5viewer);CHKERRQ(ierr);
+
+  	/* Close the viewer */
+  	ierr = PetscViewerDestroy(&H5viewer);CHKERRQ(ierr);
+
+  	ierr = VecDestroy(&res);CHKERRQ(ierr);
+  	ierr = DMDestroy(&daND);CHKERRQ(ierr);
+}	

@@ -81,6 +81,8 @@ climate: ../iFluid/iFluid.h climate.h climate.cpp weno.o iFsub.o clmsub.o clmini
 
 clean:
 	rm -rf *.o climate 
+clean-qsub:
+	rm -rf qsub*.o* qsub*.po*
 output :
 	rm -rf out/*
 

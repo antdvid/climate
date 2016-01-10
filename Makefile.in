@@ -30,28 +30,9 @@ all:
 	cd subsurf && $(MAKE)
 clean:
 	cd src && $(MAKE) clean
-	cd example && $(MAKE) clean
-	cd example3d && $(MAKE) clean
 	cd iFluid && $(MAKE) clean
-	cd cFluid && $(MAKE) clean
-	cd wings && $(MAKE) clean
-	cd cim && $(MAKE) clean
-	cd inverse && $(MAKE) clean
-	cd airfoil && $(MAKE) clean
-	cd parachute && $(MAKE) clean
-	cd cell && $(MAKE) clean
-	cd crystal && $(MAKE) clean
-	cd curvature && $(MAKE) clean
-	cd finance && $(MAKE) clean
-	cd frgb && $(MAKE) clean
 	cd climate && $(MAKE) clean
-	cd melting && $(MAKE) clean
-	cd pde && $(MAKE) clean
-	cd MonteCarlo && $(MAKE) clean
-	cd timeSeries && $(MAKE) clean
-	cd poisson && $(MAKE) clean
-	cd subsurf && $(MAKE) clean
-	cd iTaps && $(MAKE) clean
+	cd solver && $(MAKE) clean
 	-cd lib/$(build_cpu)/; rm -rf gas *.a
 	-rm -rf incs
 	-rm -rf include

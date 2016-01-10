@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -pe mpi 16 
+#$ -pe mpi 1 
 #$ -q nodes.q
 #$ -j y
 #$ -cwd 
@@ -13,4 +13,4 @@ source /home/zgao/.bashrc
 module load intel
 module load openmpi-1.8/intel
 
-/act/openmpi-1.8/intel/bin/mpirun -np 8 $DIR/climate -d 3 -p 2 2 2 -i $DIR/in-$prob -o $DIR/out-$prob
+/act/openmpi-1.8/intel/bin/mpirun -np 1 $DIR/climate -d 3 -p 1 1 1 -i $DIR/in-$prob -o $DIR/out-$prob
