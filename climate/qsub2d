@@ -1,5 +1,5 @@
 #!/bin/bash 
-#$ -pe mpi 64 
+#$ -pe mpi 16 
 #$ -q nodes.q
 #$ -j y
 #$ -R y
@@ -12,4 +12,4 @@ echo $DIR
 source /etc/profile.d/modules.sh
 source /home/zgao/.bashrc
 
-mpirun -np 64 $DIR/climate -d 2 -p 8 8 -i $DIR/in-$prob -o $DIR/out-$prob
+mpirun -np 16 $DIR/climate -d 2 -p 4 4 -i $DIR/in-$prob -o $DIR/out-$prob

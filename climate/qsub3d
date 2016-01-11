@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -pe mpi 1 
+#$ -pe mpi 32 
 #$ -q nodes.q
 #$ -j y
 #$ -cwd 

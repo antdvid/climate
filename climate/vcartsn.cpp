@@ -1962,6 +1962,7 @@ void VCARTESIAN::recordParticles(char* filename, PARTICLE* particle_array, int n
 	int total_particles = num_particles;
 	long *offset = new long[num_nodes]();
 
+	pp_gsync();
 	pp_global_isum(&total_particles,1);
 	/*calculate offsets for each processor*/
 	for (int i = my_node+1; i < num_nodes; ++i)
@@ -2026,6 +2027,7 @@ void VCARTESIAN::recordParticles(char* filename, PARTICLE* particle_array, int n
 					field->temperature,NULL,buffer+8,NULL);
 	    MPI_File_write(fh, buffer, num_cols, MPI_DOUBLE, &status);
 	}
+	delete[] offset;
 	MPI_File_close(&fh);
 }
 
@@ -2730,7 +2732,7 @@ void VCARTESIAN::recordField(double* varfield, const char *varname)
         }
 	pp_gsync();
 
-        sprintf(filename,"%s/%s-%4.2f",filename,varname,front->time);
+        sprintf(filename,"%s/%s-%s.h5",filename,varname,right_flush(front->step,7));
 	write_hdf5_field(varfield,filename,varname);
  	return;
 }
@@ -4340,9 +4342,10 @@ void VCARTESIAN::output()
 	    recordField(field->drops,"num");
 	    recordField(field->vel[0],"xvel");
 	    recordField(field->vel[1],"yvel");
-	    recordField(field->vel[2],"zvel");
 	    recordField(field->supersat,"supersat");
-            recordParticles();
+	    if (dim == 3)
+	        recordField(field->vel[2],"zvel");
+            //recordParticles();
 	}
 }
 
@@ -4409,9 +4412,9 @@ int VCARTESIAN::write_hdf5_field(double* field,const char* fname,const char* var
 	lmin[1] = jmin; lmax[1] = jmax;
 	lmin[2] = kmin; lmax[2] = kmax;
 	find_Cartesian_coordinates(myid,front->pp_grid,pp_coords);
-	for (int i = 0; i < num_nodes; ++i) 
-	    n_in_dir[i] = 0;
 	for (int l = 0; l < dim; ++l){
+	    for (int i = 0; i < num_nodes; ++i) 
+	        n_in_dir[i] = 0;
             n_in_dir[myid] = lmax[l]-lmin[l]+1;
             pp_global_imax(n_in_dir,num_nodes);   
             icorner[l] = 0;
@@ -4465,4 +4468,5 @@ int VCARTESIAN::write_hdf5_field(double* field,const char* fname,const char* var
 
   	ierr = VecDestroy(&res);CHKERRQ(ierr);
   	ierr = DMDestroy(&daND);CHKERRQ(ierr);
+	pp_gsync();
 }	

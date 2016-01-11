@@ -151,15 +151,6 @@ extern void read_CL_prob_type(Front* front)
             	else
                 	eqn_params->if_condensation = NO;
             }
-	    if(CursorAfterStringOpt(infile,"Enter yes to use big data:"))
-	    {
-		 fscanf(infile,"%s",string);
-                (void) printf("%s\n",string);
-                if (string[0] == 'Y' || string[0] == 'y')
-                        eqn_params->is_bigdata = YES;
-                else
-                        eqn_params->is_bigdata = NO;
-	    }
 	    *prob_type = PARTICLE_TRACKING;
 	    eqn_params->no_droplets = NO;
             eqn_params->init_drop_state = PRESET_STATE;
@@ -172,6 +163,15 @@ extern void read_CL_prob_type(Front* front)
             *prob_type = PARTICLE_TRACKING;
 	    readCustomOption(infile,eqn_params,iFparams);
         }
+	if(CursorAfterStringOpt(infile,"Enter yes to use big data:"))
+	{
+	    fscanf(infile,"%s",string);
+            (void) printf("%s\n",string);
+            if (string[0] == 'Y' || string[0] == 'y')
+                eqn_params->is_bigdata = YES;
+            else
+                eqn_params->is_bigdata = NO;
+	}
 }
 
 static void readCustomOption(
