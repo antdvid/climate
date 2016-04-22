@@ -3333,23 +3333,28 @@ void VCARTESIAN::recordLagrangSupersat(const char *out_name)
 	    free_these(1,supersat_array);
 	    FT_VectorMemoryAlloc((POINTER*)&supersat_array,max_array_size,FLOAT);
 	}
+	int count = 0;
 	for (i = 0; i < eqn_params->num_drops; i++)
 	{
+	    //ignore zero radius particle
+	    //zero particle is assumed to be removed from domain
+	    if (eqn_params->particle_array[i].radius < MACH_EPS)
+		continue;
 	    center = eqn_params->particle_array[i].center;
 	    rect_in_which(center,ic,top_grid);
 	    index = d_index(ic,top_gmax,dim);
 	    s = field->supersat[index];
 	    FT_IntrpStateVarAtCoords(front,LIQUID_COMP,center,
                                 field->supersat,getStateSuper,&s,&s);
-	    supersat_array[i] = s;
+	    supersat_array[count++] = s;
 	}
 	bin_num = 200;
-	PDF = ComputePDF(supersat_array,eqn_params->num_drops,bin_size,bin_num,min_supersat,max_supersat);
+	PDF = ComputePDF(supersat_array,count,bin_size,bin_num,min_supersat,max_supersat);
 	if (pp_mynode() == 0)
 	{
 	    for (i = 0; i < bin_num; i ++)
 	    {
-	        bin_mid = min_supersat+(0.5+i)*bin_size;
+	        bin_mid = min_supersat+i*bin_size;
 	        fprintf(file,"%15.14f  %15.14f\n",bin_mid,PDF[i]);
 	    }
 	    fclose(file);
