@@ -1672,7 +1672,7 @@ extern double* ComputePDF(
 	pp_global_min(&var_min,1);	
 
 #endif
-	bin_size = (var_max - var_min)/num_bins;
+	bin_size = (var_max - var_min)/(num_bins-1);
 	//num_bins = ceil((var_max - var_min)/bin_size);
 	if (num_bins > max_bin_num)
 	{
@@ -1698,8 +1698,8 @@ extern double* ComputePDF(
 		continue;
 	    for (j = 0; j < num_bins; j++)
 	    {
-	        if (array[i] >= var_min+j*bin_size &&
-		    array[i] < var_min+(j+1)*bin_size)
+	        if (array[i] >= var_min+(j-0.5)*bin_size &&
+		    array[i] < var_min+(j+0.5)*bin_size)
 	        {
 		    PDF[j] += 1.0;
 		    break;

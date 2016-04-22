@@ -318,7 +318,9 @@ public:
 	void computeVolumeForceLinear();
 	double computeDspRate();
 	double computeDspRateLinear();
+#ifdef __HDF5__
 	int write_hdf5_field(double*,const char*,const char*);
+#endif
 };
 
 /*weno scheme for computing advection term*/

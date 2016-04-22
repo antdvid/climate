@@ -2731,9 +2731,11 @@ void VCARTESIAN::recordField(double* varfield, const char *varname)
             clean_up(ERROR);
         }
 	pp_gsync();
+#ifdef __HDF5__
 
         sprintf(filename,"%s/%s-%s.h5",filename,varname,right_flush(front->step,7));
 	write_hdf5_field(varfield,filename,varname);
+#endif
  	return;
 }
 
@@ -3796,7 +3798,6 @@ static double computeInputEnergy
 	    Default:
 		printf("Warning: in computeInputEnergy(), unknown dim = %d\n",dim);
 	}	
-	printf("max_accel = %f\n",max_a);
 	pp_gsync();
 	pp_global_isum(&size,1);
 	pp_global_sum(&eps_in,1);
@@ -3892,9 +3893,7 @@ void VCARTESIAN::computeVolumeForceLinear()
 	if (dim == 3)
 	{lmin[2] = kmin; lmax[2] = kmax;}
 	urms = computeUrms(vel,dim,lmin,lmax,top_gmax);
-	printf("urms = %f\n",urms);
 	A = eps/(dim*urms*urms);
-	printf("A = %f\n",A);
 	
 	for (i = 0; i < comp_size; i++)
 	for (j = 0; j < dim; j++)
@@ -3902,7 +3901,6 @@ void VCARTESIAN::computeVolumeForceLinear()
 	for (j = 0; j < dim; j++)
 	    FT_ParallelExchGridArrayBuffer(ext_accel[j],front,NULL);
 	eps_in = computeInputEnergy(ext_accel,vel,dim,lmin,lmax,top_gmax);
-        printf("Phy: eps_in = %e\n",eps_in);
 }
 
 void VCARTESIAN::computeVolumeForceFourier()
@@ -3935,7 +3933,6 @@ void VCARTESIAN::computeVolumeForceFourier()
 	
 	if (eqn_params->if_volume_force == NO)
 	    return;
-	printf("computeVolumeForceFourier\n");
 	start_clock("volume_force");
 
 
@@ -3949,7 +3946,6 @@ void VCARTESIAN::computeVolumeForceFourier()
 	    eps = computeDspRate(); 	    
 	    eqn_params->disp_rate = eps;
 	    /*compute mean kinetic energy dissipation*/
-	    printf("eps_in = %e\n",eps);
 	    if (pp_mynode() == 0)
 	    {
 	        /*allocating memory*/
@@ -4150,7 +4146,6 @@ void VCARTESIAN::computeVolumeForceFourier()
 	lmin[0] = imin; lmin[1] = jmin; lmin[2] = kmin;
 	lmax[0] = imax; lmax[1] = jmax; lmax[2] = kmax;
 	eps_in = computeInputEnergy(ext_accel,vel,dim,lmin,lmax,top_gmax);
-	printf("Phy: eps_in = %e\n",eps_in);	
 	stop_clock("volume_force");
 	return;
 }
@@ -4350,6 +4345,7 @@ void VCARTESIAN::output()
 }
 
 
+#ifdef __HDF5__
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscsys.h>
@@ -4469,4 +4465,5 @@ int VCARTESIAN::write_hdf5_field(double* field,const char* fname,const char* var
   	ierr = VecDestroy(&res);CHKERRQ(ierr);
   	ierr = DMDestroy(&daND);CHKERRQ(ierr);
 	pp_gsync();
-}	
+}
+#endif	
