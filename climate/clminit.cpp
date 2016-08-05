@@ -414,13 +414,15 @@ extern void readPhaseParams(
 	}
 	printf("\n");
 
-	CursorAfterStringOpt(infile,"Enter number of clips in direction:");
-	for (i = 0; i < dim; ++i)
+	if(CursorAfterStringOpt(infile,"Enter number of clips in direction:"))
 	{
-            fscanf(infile,"%d ",&eqn_params->Nclip[i]);
-            (void) printf("%d  ",eqn_params->Nclip[i]);
-	}
-	printf("\n");
+	    for (i = 0; i < dim; ++i)
+	    {
+                fscanf(infile,"%d ",&eqn_params->Nclip[i]);
+                (void) printf("%d  ",eqn_params->Nclip[i]);
+	    }
+	    printf("\n");
+ 	}
 
         CursorAfterStringOpt(infile,"Enter yes to enable volume force:");
         fscanf(infile,"%s ",string);

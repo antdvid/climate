@@ -2045,7 +2045,6 @@ void VCARTESIAN::recordGroupParticles()
         int group_id, num_drops = eqn_params->num_drops;
         int group_crds[MAXD], group_gmax[MAXD];
         static double *group_mean[2]; /*mean value for different groups*/
-        static double *group_init[2];
         static int NGroup = 1;
         /*group_mean[0]:radius^3*/
         /*group_mean[1]:total number of droplets in group*/
@@ -2060,8 +2059,8 @@ void VCARTESIAN::recordGroupParticles()
             for (i = 0; i < 2; i++)
             {
                 group_mean[i] = new double[NGroup];
-                group_init[i] = new double[NGroup];
             }
+	    first = NO;
         }
         for (i = 0; i < dim; i++)
         {
@@ -2078,13 +2077,6 @@ void VCARTESIAN::recordGroupParticles()
         for (i = 0; i < num_drops; i++)
         {
             coords = particle_array[i].center;
-	    /*exclude particles out of sample box*/
-            for (j = 0; j < dim; j++)
-	    ic[j] = floor((coords[j] - top_L[j] + 0.5*top_h[j])/top_h[j]);
-            index = d_index(ic,top_gmax,dim);
-	    if (field->sample[index] != 1)
-		continue;
-	    /*end of excluding*/
             for (j = 0; j < dim; j++)
                 group_crds[j] = floor(coords[j]/block_size[j]);
             group_id = d_index(group_crds,group_gmax,dim);
@@ -2098,15 +2090,12 @@ void VCARTESIAN::recordGroupParticles()
             pp_global_sum(group_mean[j],NGroup);
 
         for (i = 0; i < NGroup; i++)
-            group_mean[0][i] /= group_mean[1][i];
-
-        if (first)
-        {
-            first = NO;
-            for (j = 0; j < 2; j++)
-            for (i = 0; i < NGroup; i++)
-                 group_init[j][i] = group_mean[j][i];
-        }
+	{
+	    if (group_mean[1][i] > 0)
+            	group_mean[0][i] /= group_mean[1][i];
+	    else
+		group_mean[0][i] = 0;
+	}
 
         if (pp_mynode() == 0)
         {
@@ -2119,10 +2108,10 @@ void VCARTESIAN::recordGroupParticles()
             sprintf(fname,"%s/group-%f",fname,front->time);
             file = fopen(fname,"w");
             for (i = 0; i < NGroup; i++)
-                fprintf(file,"%f %f %f\n",
+                fprintf(file,"%f %e %e\n",
                         front->time,
-                        group_mean[0][i]/group_init[0][i],
-                        group_mean[1][i]/group_init[1][i]);
+                        group_mean[0][i],
+                        group_mean[1][i]);
             fclose(file);
         }
 }
@@ -2437,7 +2426,7 @@ void VCARTESIAN::recordMixingLine()
 	double NL; /*transition scale number*/
 	double env_supersat;  /*supersaturation in clear air*/
 	int index, i, j, k, l, m, m1, m2, ic, I;
-	int nzeros, nzeros_in_samplebox;
+	int nzeros;
 	int gmin[MAXD], ipn[MAXD], icoords[MAXD];
 	const GRID_DIRECTION dir[3][2] =
                 {{WEST,EAST},{SOUTH,NORTH},{LOWER,UPPER}};
@@ -2474,7 +2463,6 @@ void VCARTESIAN::recordMixingLine()
 	rv = 0;
 	r0 = 0;
 	nzeros = 0;
-	nzeros_in_samplebox = 0;
 	for (i = 0; i < eqn_params->num_drops; i++)
 	{   
 	    radius_array[i] = particle_array[i].radius;
@@ -2484,9 +2472,6 @@ void VCARTESIAN::recordMixingLine()
                 icoords[j] = floor((particle_array[i].center[j] 
 			- top_L[j] + 0.5*top_h[j])/top_h[j]);
             index = d_index(icoords,top_gmax,dim);
-	    if (particle_array[i].radius > 0 &&
-		field->sample[index] == 1)
-		nzeros_in_samplebox ++;
 	    rv += pow(particle_array[i].radius,3.0);
 	    r0 += pow(particle_array[i].R0,3.0);
 	}
@@ -2495,13 +2480,11 @@ void VCARTESIAN::recordMixingLine()
 	ReduceBuff[0] = rv;
 	ReduceBuff[1] = r0;
 	ReduceBuff[2] = nzeros;
-	ReduceBuff[3] = nzeros_in_samplebox;
 	pp_gsync();
 	pp_global_sum(ReduceBuff,4);
 	rv = ReduceBuff[0];
 	r0 = ReduceBuff[1];
 	nzeros    = (int)ReduceBuff[2];
-	nzeros_in_samplebox = (int)ReduceBuff[3];
 #endif 
 	rv /= nzeros;
 	r0 /= nzeros;
@@ -2534,7 +2517,7 @@ void VCARTESIAN::recordMixingLine()
 
             sprintf(fname,"%s/RN",out_name);
             file = fopen(fname,"w");
-            fprintf(file,"%%time    Rv    Rm    stdDev   N_total    N_in_samplebox\n");
+            fprintf(file,"%%time    Rv    Rm    stdDev   N_total\n");
             fclose(file);
 
             sprintf(fname,"%s/transition",out_name);
@@ -2551,8 +2534,8 @@ void VCARTESIAN::recordMixingLine()
 	/*plot mixing line: N/N0 VS. (Rv/Rv0)^3*/
         sprintf(fname,"%s/RN",out_name);
         file = fopen(fname,"a");
-	fprintf(file,"%f  %15.14f  %15.14f  %15.14f  %d  %d\n", 
-		front->time,pow(rv,1.0/3.0),rm,sqrt(Dev),nzeros,nzeros_in_samplebox);
+	fprintf(file,"%f  %15.14f  %15.14f  %15.14f  %d\n", 
+		front->time,pow(rv,1.0/3.0),rm,sqrt(Dev),nzeros);
 	fclose(file);
         sprintf(fname,"%s/transition",out_name);
         file = fopen(fname,"a");
@@ -3178,8 +3161,6 @@ void VCARTESIAN::setDomain()
                         FLOAT);
                 FT_VectorMemoryAlloc((POINTER*)&field->adv_old,comp_size,
                         FLOAT);
-		FT_VectorMemoryAlloc((POINTER*)&field->sample,comp_size,
-			FLOAT);
                 FT_MatrixMemoryAlloc((POINTER*)&field->ext_accel,2,comp_size,
                                         FLOAT);
 		FT_VectorMemoryAlloc((POINTER*)&field->temperature,
@@ -3212,8 +3193,6 @@ void VCARTESIAN::setDomain()
                         FLOAT);
                 FT_VectorMemoryAlloc((POINTER*)&field->adv_old,comp_size,
                         FLOAT);
-		FT_VectorMemoryAlloc((POINTER*)&field->sample,comp_size,
-			FLOAT);
                 FT_MatrixMemoryAlloc((POINTER*)&field->ext_accel,3,comp_size,
                                         FLOAT);
 		FT_VectorMemoryAlloc((POINTER*)&field->temperature,
@@ -3543,14 +3522,7 @@ void VCARTESIAN::initPresetParticles()
                                   front->pp_grid->Global_grid.L,
                                   front->pp_grid->Global_grid.U);
         eqn_params->particle_array = particle_array;
-	setSamplePoints(field->sample,supersat,comp_size);
         computeSource();
-}
-
-static void setSamplePoints(double* sample, double *refs, int size)
-{
-	for (int i = 0; i < size; i++)
-	    sample[i] = (refs[i] >= 0) ? 1 : 0;
 }
 
 /*complex operations multiplication*/
@@ -4340,6 +4312,7 @@ void VCARTESIAN::output()
         if(eqn_params->is_bigdata)
 	{
 	    recordField(field->drops,"num");
+	    recordField(field->temperature,"temp");
 	    recordField(field->vel[0],"xvel");
 	    recordField(field->vel[1],"yvel");
 	    recordField(field->supersat,"supersat");

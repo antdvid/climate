@@ -51,7 +51,6 @@ struct _PHASE_FIELD {
 	double *drops; /*number of droplets in a cell*/
 	double *adv;   /*advection term computed by WENO5*/
 	double *adv_old;   /*advection term computed by WENO5*/
-	double *sample;
         double **vel;
 	double **ext_accel;
 };

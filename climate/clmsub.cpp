@@ -448,7 +448,7 @@ static void Rogallo_state(
 	    gmax[i] = N[i];
 	    Nr *= N[i];
 	}
-	w0 = 4.7568;
+	w0 = 2.449489743;
 	gmax[dim-1] = N[dim-1]/2 + 1; 
 	U = new fftw_complex[Nr];
 	V = new fftw_complex[Nr];
