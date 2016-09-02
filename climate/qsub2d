@@ -12,4 +12,4 @@ echo $DIR
 source /etc/profile.d/modules.sh
 source /home/zgao/.bashrc
 
-mpirun -np 16 $DIR/climate -d 2 -p 4 4 -i $DIR/in-$prob -o $DIR/out-$prob
+mpirun -np 16 $DIR/climate -d 2 -p 4 4 -i $DIR/in-$1 -o $DIR/out-$1

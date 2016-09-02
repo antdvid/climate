@@ -10,7 +10,7 @@
 #include <assert.h>
 
 #include "FronTier.h"
-#include "solver.h"
+#include <solver.h>
 
 #define         SOLID_COMP		1
 #define         LIQUID_COMP1		2

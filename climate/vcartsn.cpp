@@ -4318,7 +4318,7 @@ void VCARTESIAN::output()
 	    recordField(field->supersat,"supersat");
 	    if (dim == 3)
 	        recordField(field->vel[2],"zvel");
-            //recordParticles();
+            recordParticles();
 	}
 }
 
