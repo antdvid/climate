@@ -38,11 +38,8 @@ Makefile
 *.o*
 configure
 include
-crystal
-iFluid
 
 # Others
 *~
-frontier-apps
 out-*
 tags
