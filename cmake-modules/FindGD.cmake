@@ -5,16 +5,10 @@
 #  GD_DEFINITIONS - Compiler switches required for using GD
 
 find_path(GD_INCLUDE_DIR gd.h 
-          HINTS ${PC_GD_INCLUDEDIR} ${PC_GD_INCLUDE_DIRS}
-	  $ENV{GD_DIR}/include
-	  /usr/include
-	  /usr/local/include
-          PATH_SUFFIXES)
+          HINTS $ENV{GD_DIR}/include)
 
 find_library(GD_LIBRARY NAMES libgd.a 
-             HINTS ${PC_GD_LIBDIR} ${PC_GD_LIBRARY_DIRS} 
-		$ENV{GD_DIR}/lib
-		/usr/lib)
+             HINTS $ENV{GD_DIR}/lib)
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set GD_FOUND to TRUE
