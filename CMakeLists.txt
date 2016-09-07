@@ -27,7 +27,7 @@ if (HDF4_FOUND)
     MESSAGE(STATUS "Found HDF4: " ${HDF4_LIBRARIES})
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_HDF")
 else ()
-    MESSAGE(WARNING "HDF4 cannot be found. Set HDF4_ROOT and HDF4_ROOT_DIR_HINT containing hdf4-config.cmake. This requires hdf4 was built with cmake tool.")
+    MESSAGE(WARNING "HDF4 cannot be found. Set HDF4_ROOT is hdf animation is needed. Build continues ...")
 endif()
 
 if (GD_FOUND)
