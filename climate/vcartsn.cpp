@@ -1938,7 +1938,7 @@ void VCARTESIAN::recordParticles()
 	char fname[256];
 	if (debugging("trace"))
             printf("Entering record particles\n");
-        sprintf(fname,"%s/record_particles",OutName(front));
+        sprintf(fname,"%s/record-particles",OutName(front));
         if (!create_directory(fname,NO))
         {
             printf("Cannot create directory %s\n",fname);
