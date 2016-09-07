@@ -6,9 +6,10 @@ find_package (PETSc)
 
 if (PETSc_FOUND)
     MESSAGE("-- Found PETSc: " ${PETSc_LIBRARY})
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__HYPRE__")
     list(APPEND external_include_dir ${PETSc_INCLUDE_DIRS})
 else ()
-    MESSAGE(FATAL_ERROR "Could NOT find PETSc, be sure to set PETSC_DIR")
+    MESSAGE(FATAL_ERROR "Could NOT find PETSc, be sure to set PETSC_DIR and PETSc is configured with --download-hypre")
 endif()
 
 

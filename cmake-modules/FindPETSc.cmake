@@ -6,14 +6,16 @@
 
 find_path(PETSc_INCLUDE_DIR petsc.h 
           HINTS
+	  /usr/include
+	  /usr/local/include
 	  $ENV{PETSC_DIR}/include
-          PATH_SUFFIXES petsc.h)
+          PATH_SUFFIXES petsc/include)
 
-find_library(PETSc_LIBRARY NAMES libpetsc.a libpetsc.so 
-             HINTS $ENV{PETSC_DIR}/lib PATH_SUFFIXES libpetsc)
+find_library(PETSc_LIBRARY NAMES petsc
+             HINTS $ENV{PETSC_DIR}/lib)
 
-find_library(HYPRE_LIBRARY NAMES libHYPRE.a
-             HINTS $ENV{PETSC_DIR}/lib PATH_SUFFIXES libpetsc)
+find_library(HYPRE_LIBRARY NAMES HYPRE
+             HINTS $ENV{PETSC_DIR}/lib)
 
 set (PETSc_LIBRARY ${PETSc_LIBRARY} ${HYPRE_LIBRARY})
 

@@ -16,7 +16,7 @@ target_include_directories(frontier PUBLIC
 				${external_include_dir})
 set(link_libs)
 if (HDF4_FOUND)
-    list (APPEND link_libs ${HDF4_LIBRARY})
+    list (APPEND link_libs ${HDF4_LIBRARIES})
 endif()
 
 if (GD_FOUND)

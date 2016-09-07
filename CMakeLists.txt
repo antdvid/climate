@@ -24,10 +24,10 @@ else ()
 endif()
 
 if (HDF4_FOUND)
-    MESSAGE("-- Found HDF4: " ${HDF4_LIBRARY})
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__HDF__")
+    MESSAGE("-- Found HDF4: " ${HDF4_LIBRARIES})
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_HDF")
 else ()
-    MESSAGE(WARNING "HDF4 cannot be found. Set HDF4_DIR if hdf animation is needed. Build continues ...")
+    MESSAGE(WARNING "HDF4 cannot be found. Set HDF4_ROOT and HDF4_ROOT_DIR_HINT containing hdf4-config.cmake. This requires hdf4 was built with cmake tool.")
 endif()
 
 if (GD_FOUND)
@@ -65,12 +65,12 @@ set(external_lib_dir
 
 if (GD_FOUND)
 	list( APPEND external_include_dir ${GD_INCLUDE_DIR})
-	list( APPEND external_lib_dir ${GD_INCLUDE_DIR})
+	list( APPEND external_lib_dir ${GD_LIBRARY})
 endif()
 
 if (HDF4_FOUND)
 	list( APPEND external_include_dir ${HDF4_INCLUDE_DIR})
-	list( APPEND external_lib_dir ${HDF4_INCLUDE_DIR})
+	list( APPEND external_lib_dir ${HDF4_LIBRARIES})
 endif()
 
 # Recurse into the following subdirectories
