@@ -3,13 +3,15 @@
 Package_Name 	Environment_Variable	Version
 --------------------------------------------------
 MPI		MPI_DIR			openmpi/mpich2
-PETSc		PETSC_DIR		== 3.6 with HYPRE with HDF5
+PETSc		PETSC_DIR		== 3.6 with 
+					HYPRE with HDF5
 HDF4		HDF4_ROOT		>= 4.2
 GD		GD_DIR			>= 2.2
 FFTW3		FFTW3_DIR		>= 3.3
 --------------------------------------------------
-This can be done with the following bash script.
-Be sure to use a correct value for each variable!
+The environment variables can be set with the 
+following bash script. Be sure to use a correct 
+value for each variable!
 --------------------------------------------------
 #!/bin/bash
 
@@ -24,12 +26,17 @@ export GD_DIR=/opt/gd
 --------------------------------------------------
 3. This project includes several modules. 
 	src: 	 source code from FronTier library
-	iFluid:  C++ library simulating incompressible fluid
+	iFluid:  C++ library for incompressible fluid
 	solver:  KSP linear solver using PETSc
 	climate: main application directory
 --------------------------------------------------
-4. This project requires "MPI" library for parallel runs. The excutable file is in "climate" directory named "climate". There are several input files in climate directory and can be passed to the application for different experiments. For example:
-	mpirun -np 8 climate -d 3 -p 2 2 2 -i in-entrainment -o out-entrainment
+4. This project requires "MPI" library for parallel 
+runs. The excutable file is in "climate" directory 
+named "climate". There are several input files in 
+climate directory and can be passed to the application 
+for different experiments. For example:
+
+  mpirun -np 8 climate -d 3 -p 2 2 2 -i in-test -o out-test
 
 Explanation for the arguments:
 	-np: number of processors
