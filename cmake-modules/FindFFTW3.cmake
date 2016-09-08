@@ -3,17 +3,25 @@
 #  FFTW3_INCLUDE_DIRS - The FFTW3 include directories
 #  FFTW3_LIBRARIES - The libraries needed to use FFTW3
 #  FFTW3_DEFINITIONS - Compiler switches required for using FFTW3
+find_program(FFTW3_WISDOM Names fftw-wisdom HINTS $ENV{PATH})
+
+if (NOT FFTW3_WISDOM) 
+    MESSAGE(WARNING "FFTW3_DIR can not be found.")
+    set(FFTW3_DIR, "")
+else()
+    get_filename_component(FFTW3_DIR ${FFTW3_WISDOM} DIRECTORY)
+endif()
 
 find_path(FFTW3_INCLUDE_DIR fftw3.h 
           HINTS ${PC_FFTW_INCLUDEDIR} ${PC_FFTW_INCLUDE_DIRS}
-	  $ENV{FFTW3_DIR}/include
+	  ${FFTW3_DIR}/include
 	  /usr/local/include
 	  /usr/include
           PATH_SUFFIXES)
 
 find_library(FFTW3_LIBRARY NAMES fftw3
              HINTS ${PC_FFTW_LIBDIR} ${PC_FFTW_LIBRARY_DIRS} 
-		$ENV{FFTW3_DIR}/lib
+		${FFTW3_DIR}/lib
 		/usr/local/lib
 		/usr/lib
 		PATH_SUFFIXES fftw3/lib fftw/lib x86_64-linux-gnu)

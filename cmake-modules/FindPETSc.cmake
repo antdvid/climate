@@ -4,18 +4,27 @@
 #  PETSc_LIBRARIES - The libraries needed to use PETSc
 #  PETSc_DEFINITIONS - Compiler switches required for using PETSc
 
+find_program(PETSCMPIEXEC NAMES petscmpiexec HINTS $ENV{PATH})
+
+if (NOT PETSCMPIEXEC)
+    MESSAGE(WARNING "petscmpiexec cannot be found from PATH")
+    set(PETSC_DIR, "")
+else()
+    get_filename_component(PETSC_DIR ${PETSCMPIEXEC} DIRECTORY)
+endif()
+
 find_path(PETSc_INCLUDE_DIR petsc.h 
           HINTS
 	  /usr/include
 	  /usr/local/include
-	  $ENV{PETSC_DIR}/include
+	  ${PETSC_DIR}/include
           PATH_SUFFIXES petsc/include)
 
 find_library(PETSc_LIBRARY NAMES petsc
-             HINTS $ENV{PETSC_DIR}/lib)
+             HINTS ${PETSC_DIR}/lib)
 
 find_library(HYPRE_LIBRARY NAMES HYPRE
-             HINTS $ENV{PETSC_DIR}/lib)
+             HINTS ${PETSC_DIR}/lib)
 
 set (PETSc_LIBRARY ${PETSc_LIBRARY} ${HYPRE_LIBRARY})
 
