@@ -3072,6 +3072,7 @@ void VCARTESIAN::recordWaterBalance()
 	     printf("No droplets included\n");
 	     front->time_limit_reached = YES;
 	}
+	front->time_limit_reached = pp_max_status(front->time_limit_reached);
 	if(liquid_mass != liquid_mass0)
 	{
 	    alpha = (log(double(nzeros)/double(num_drops)))
