@@ -55,34 +55,33 @@ set (_HDF4_PATHS
     /usr/local/hdf4/share
 )
 
-FIND_PATH (HDF4_ROOT_DIR "hdf4-config.cmake"
-    HINTS ${_HDF4_HINTS}
-    PATHS ${_HDF4_PATHS}
-    PATH_SUFFIXES
-        cmake/hdf4
-        lib/cmake/hdf4
-        share/cmake/hdf4
-)
-
+FIND_PROGRAM (HDF2GIF NAMES hdf2gif HINTS $ENV{PATH})
+if (NOT HDF2GIF)
+    MESSAGE(WARNING "hdf2gif cannot be found from PATH")
+else()
+    GET_FILENAME_COMPONENT(HDF4_ROOT_DIR ${HDF2GIF}/../.. ABSOLUTE)
+    LIST(APPEND _HDF4_HINTS ${HDF4_ROOT_DIR})
+endif()
+ 
 FIND_PATH (HDF4_INCLUDE_DIRS "hdf.h"
     HINTS ${_HDF4_HINTS}
+	  ${HDF4_ROOT_DIR}
     PATHS ${_HDF4_PATHS}
     PATH_SUFFIXES
         include
-        Include
 )
 
 # Find hdf4 library and its dependencies, modified by zheng.gao@stonybrook.edu
 # Search path is under HDF4_ROOT and the same level in case other libraries
 # are installed with HDF4
-if ( "$ENV{HDF4_ROOT}" STREQUAL "" )
-    MESSAGE(WARNING "HDF4_ROOT is not set, HDF4 is not used")
+if (NOT HDF4_ROOT_DIR)
+    MESSAGE(WARNING "HDF4_ROOT_DIR is not set, HDF4 is not used")
     set(HDF4_PARENT_DIR)
 else()
-    get_filename_component(HDF4_PARENT_DIR $ENV{HDF4_ROOT} DIRECTORY)
+    get_filename_component(HDF4_PARENT_DIR ${HDF4_ROOT_DIR} DIRECTORY)
 endif()
 set(HDF_SEARCH_PATH /usr/lib
-		    $ENV{HDF4_ROOT}/lib
+		    ${HDF4_ROOT_DIR}/lib
 		    ${HDF4_PARENT_DIR})
 
 FIND_LIBRARY(HDF4_LIBRARIES NAMES mfhdf HINTS ${HDF_SEARCH_PATH} PATH_SUFFIXES hdf/lib hdf4/lib)

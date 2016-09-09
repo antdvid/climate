@@ -6,7 +6,6 @@
 find_program(GD2TOGIF gd2togif HINTS $ENV{PATH})
 
 if (NOT GD2TOGIF)
-    MESSAGE(WARNING "gd2togif can not be found from PATH")
     set(GD_DIR, "")
 else()
     get_filename_component(GD_DIR ${GD2TOGIF}/../.. ABSOLUTE)
@@ -20,6 +19,7 @@ find_path(GD_INCLUDE_DIR gd.h
 find_library(GD_LIBRARY NAMES libgd.a 
              HINTS ${GD_DIR}/lib
 		   /usr/lib
+		   /usr/lib64
 		   /usr/local/lib)
 
 include(FindPackageHandleStandardArgs)
