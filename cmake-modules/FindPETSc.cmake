@@ -10,7 +10,7 @@ if (NOT PETSCMPIEXEC)
     MESSAGE(WARNING "petscmpiexec cannot be found from PATH")
     set(PETSC_DIR, "")
 else()
-    get_filename_component(PETSC_DIR ${PETSCMPIEXEC} DIRECTORY)
+    get_filename_component(PETSC_DIR ${PETSCMPIEXEC}/../.. ABSOLUTE)
 endif()
 
 find_path(PETSc_INCLUDE_DIR petsc.h 

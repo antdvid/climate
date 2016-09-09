@@ -6,10 +6,10 @@
 find_program(FFTW3_WISDOM Names fftw-wisdom HINTS $ENV{PATH})
 
 if (NOT FFTW3_WISDOM) 
-    MESSAGE(WARNING "FFTW3_DIR can not be found.")
+    MESSAGE(WARNING "fftw-wisdom can not be found from PATH")
     set(FFTW3_DIR, "")
 else()
-    get_filename_component(FFTW3_DIR ${FFTW3_WISDOM} DIRECTORY)
+    get_filename_component(FFTW3_DIR ${FFTW3_WISDOM}/../.. ABSOLUTE)
 endif()
 
 find_path(FFTW3_INCLUDE_DIR fftw3.h 

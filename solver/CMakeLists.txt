@@ -5,7 +5,7 @@ add_library(solver STATIC ${solver_source})
 find_package (PETSc)
 
 if (PETSC_FOUND)
-    MESSAGE("-- Found PETSc: " ${PETSc_LIBRARY})
+    MESSAGE("-- Found PETSc: ${PETSc_LIBRARY}")
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__HYPRE__")
     list(APPEND external_include_dir ${PETSc_INCLUDE_DIRS})
 else ()

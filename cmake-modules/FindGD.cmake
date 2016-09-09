@@ -3,12 +3,24 @@
 #  GD_INCLUDE_DIRS - The GD include directories
 #  GD_LIBRARIES - The libraries needed to use GD
 #  GD_DEFINITIONS - Compiler switches required for using GD
+find_program(GD2TOGIF gd2togif HINTS $ENV{PATH})
+
+if (NOT GD2TOGIF)
+    MESSAGE(WARNING "gd2togif can not be found from PATH")
+    set(GD_DIR, "")
+else()
+    get_filename_component(GD_DIR ${GD2TOGIF}/../.. ABSOLUTE)
+endif()
 
 find_path(GD_INCLUDE_DIR gd.h 
-          HINTS $ENV{GD_DIR}/include)
+          HINTS ${GD_DIR}/include
+		/usr/include
+		/usr/local/include)
 
 find_library(GD_LIBRARY NAMES libgd.a 
-             HINTS $ENV{GD_DIR}/lib)
+             HINTS ${GD_DIR}/lib
+		   /usr/lib
+		   /usr/local/lib)
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set GD_FOUND to TRUE
