@@ -16,7 +16,7 @@ find_path(GD_INCLUDE_DIR gd.h
 		/usr/include
 		/usr/local/include)
 
-find_library(GD_LIBRARY NAMES libgd.a 
+find_library(GD_LIBRARY NAMES gd 
              HINTS ${GD_DIR}/lib
 		   /usr/lib
 		   /usr/lib64
