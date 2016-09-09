@@ -1,24 +1,22 @@
 1. The project depends on the following packages
 --------------------------------------------------
-Package_Name 	Environment_Variable	Version
+Package_Name 	Version
 --------------------------------------------------
-MPI		MPI_DIR			openmpi/mpich2
-PETSc		PETSC_DIR		== 3.6 with 
-					HYPRE with HDF5
-HDF4		HDF4_ROOT		>= 4.2
-GD		GD_DIR			>= 2.2
-FFTW3		FFTW3_DIR		>= 3.3
+MPI		openmpi/mpich2
+PETSc		== 3.6 configure with HYPRE
+HDF4		>= 4.2
+GD		>= 2.2
+FFTW3		>= 3.3
 --------------------------------------------------
-The environment variables can be set with the 
-following bash script. Be sure to use a correct 
-value for each variable!
+The cmake modules tries to find out the path for
+each packages using $PATH variable, which can be set 
+with the following bash script. Be sure to use a 
+correct value for each variable!
 --------------------------------------------------
 #!/bin/bash
 
-export PETSC_DIR=/opt/petsc
-export HDF4_DIR=/opt/hdf4
-export FFTW3_DIR=/opt/fftw3
-export GD_DIR=/opt/gd
+export PATH=/opt/mpich2/bin:/opt/petsc3.6/bin:
+/opt/hdf4/bin:/opt/fftw3/bin:/opt/gd/bin:$PATH
 --------------------------------------------------
 2. This project is built with cmake tool.
 	cmake .
