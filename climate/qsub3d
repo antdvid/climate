@@ -1,7 +1,8 @@
 #!/bin/bash
-#$ -pe mpi 32 
+#$ -pe mpi 64 
 #$ -q nodes.q
 #$ -j y
+#$ -R y
 #$ -cwd 
 
 #directory of excutable
@@ -10,7 +11,5 @@ echo $DIR
 
 source /etc/profile.d/modules.sh
 source /home/zgao/.bashrc
-module load intel
-module load openmpi-1.8/intel
 
-/act/openmpi-1.8/intel/bin/mpirun -np 1 $DIR/climate -d 3 -p 1 1 1 -i $DIR/in-$prob -o $DIR/out-$prob
+mpirun -np 64 $DIR/climate -d 3 -p 4 4 4 -i $DIR/in-$1 -o $DIR/out-$1

@@ -1605,7 +1605,7 @@ extern void Deviation(double* array,int size,double &Mean,double &Var)
                 Mean += array[i];
 	    }
         }
-#if defined(__MPI__)
+#if defined __MPI__
 	pp_gsync();
         pp_global_isum(&nzeros,1);
         pp_global_sum(&Mean,1);
@@ -1620,7 +1620,7 @@ extern void Deviation(double* array,int size,double &Mean,double &Var)
                 Var += sqr(array[i]-Mean);
             }
         }
-#if defined(__MPI__)
+#if defined __MPI__
 	pp_gsync();
         pp_global_sum(&Var,1);
 #endif
@@ -1666,7 +1666,7 @@ extern double* ComputePDF(
 		var_max = array[i];
 	}
 
-#if defined(__MPI__)
+#if defined __MPI__
 	pp_gsync();
 	pp_global_max(&var_max,1);	
 	pp_global_min(&var_min,1);	
@@ -1706,7 +1706,7 @@ extern double* ComputePDF(
 	        }
 	    }
 	}
-#if defined(__MPI__)	
+#if defined __MPI__	
 	pp_gsync();
 	pp_global_sum(PDF,num_bins);
  #endif

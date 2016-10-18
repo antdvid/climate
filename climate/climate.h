@@ -254,6 +254,7 @@ public:
 	void recordPDF(char *, const char *);
 	void recordCondensationRate(char*);
 	void recordRadius(char *);
+	void recordRadiusInCell();
 	void recordLagrangSupersat(const char*);
 	void recordMixingLine();
 	void recordClusteringIndex();

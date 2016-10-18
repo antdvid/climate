@@ -1105,7 +1105,7 @@ void VCARTESIAN::computeSupersat()
             p += field->pres[index];
         }
 	size = comp_size;
-#if defined(__MPI)
+#ifdef __MPI__
 	pp_gsync();
         pp_global_sum(&T,1);
         pp_global_sum(&p,1);
@@ -1480,7 +1480,7 @@ void VCARTESIAN::printFrontInteriorState(char *out_name)
 
         sprintf(filename,"%s/state.ts%s-vapor",out_name,
                         right_flush(front->step,7));
-#if defined(__MPI__)
+#ifdef __MPI__
         if (pp_numnodes() > 1)
             sprintf(filename,"%s-nd%s",filename,right_flush(pp_mynode(),4));
 #endif /* defined(__MPI__) */
@@ -2476,7 +2476,7 @@ void VCARTESIAN::recordMixingLine()
 	    r0 += pow(particle_array[i].R0,3.0);
 	}
 
-#if defined(__MPI__)
+#if defined __MPI__
 	ReduceBuff[0] = rv;
 	ReduceBuff[1] = r0;
 	ReduceBuff[2] = nzeros;
@@ -3050,7 +3050,7 @@ void VCARTESIAN::recordWaterBalance()
 	water_balance[2] = liquid_mass;
 	water_balance[3] = liquid_mass + 0.001 * vapor_mass;
 
-#if defined(__MPI__)
+#if defined __MPI__
 	for (i = 0; i < 3; i++)	
 	    ReduceBuff[i] = water_balance[i+1];
 	ReduceBuff[3] = nzeros;
@@ -3343,6 +3343,54 @@ void VCARTESIAN::recordLagrangSupersat(const char *out_name)
 	    printf("Leaving record Lagrang supersaturation\n");
 }
 
+void VCARTESIAN::recordRadiusInCell() {
+	PARAMS* eqn_params = (PARAMS*)front->extra2;
+	PARTICLE* particle_array = eqn_params->particle_array;
+	int num_drops = eqn_params->num_drops;
+	int ic[MAXD], index;
+	double *coords;
+
+	for (int i = 0; i < comp_size; ++i) {
+	    field->mrad[i] = 0;
+	    field->drops[i] = 0;
+	}
+
+	//compute mean radius in cell
+	for (int i = 0; i < num_drops; ++i) {
+	    coords = particle_array[i].center;
+	    for (int j = 0; j < dim; j++)
+                ic[j] = floor((coords[j] - top_L[j] + 0.5*top_h[j])/top_h[j]);
+	    index = d_index(ic, top_gmax, dim);
+	    if (particle_array[i].radius > 0) {
+	        field->mrad[index] += particle_array[i].radius;
+		field->drops[index] ++;
+	    }
+	}
+	
+	for (int i = 0; i < comp_size; ++i)
+	    if (field->drops[i] > 0)
+		field->mrad[i] /= field->drops[i];
+	recordField(field->mrad, "Rm");
+
+	//compute volume mean radius in cell
+	for (int i = 0; i < comp_size; ++i)
+            field->mrad[i] = 0;
+
+	for (int i = 0; i < num_drops; ++i) {
+	    coords = particle_array[i].center;
+	    for (int j = 0; j < dim; j++)
+                ic[j] = floor((coords[j] - top_L[j] + 0.5*top_h[j])/top_h[j]);
+	    index = d_index(ic, top_gmax, dim);
+	    if (particle_array[i].radius > 0)
+	        field->mrad[index] += pow(particle_array[i].radius, 3);
+	}
+
+	for (int i = 0; i < comp_size; ++i)
+            if (field->drops[i] > 0)
+                field->mrad[i] /= field->drops[i];
+        recordField(field->mrad, "Rv");
+}
+
 void VCARTESIAN::recordRadius(char *out_name)
 {
 	INTERFACE *intfc = front->interf;
@@ -3471,7 +3519,7 @@ void VCARTESIAN::initPresetParticles()
         }
 
         G_count = count;
-#if defined(__MPI__)
+#ifdef __MPI__
         pp_gsync();
         pp_global_isum(&G_count,1);
 #endif
@@ -4201,7 +4249,6 @@ void VCARTESIAN::computeVaporSource()
 	    source[i] = 0.0;
 	    field->drops[i] = 0;
 	    field->cloud[i] = 0.0;
-	    field->mrad[i] = 0.0;
 	}
 	/*caculate num_drops in each cell: drops[index]*/
 	/*compute source term for vapor equation: source[index]*/
@@ -4222,7 +4269,6 @@ void VCARTESIAN::computeVaporSource()
 	    if (particle_array[i].radius > 0)
 	    {
 	        field->drops[index] += 1;
-		field->mrad[index] += particle_array[i].radius;
 		qc[index] += (4.0/3.0)*PI
 				    *   pow(particle_array[i].radius,3)
 				    *   particle_array[i].rho
@@ -4231,13 +4277,6 @@ void VCARTESIAN::computeVaporSource()
         }
 	FT_ParallelExchGridArrayBuffer(qc,front,NULL);
 	FT_ParallelExchGridArrayBuffer(field->drops,front,NULL);
-	FT_ParallelExchGridArrayBuffer(field->mrad,front,NULL);
-	/*compute mean radius in a cell*/
-	for (index = 0; index < comp_size; index++)
-	{
-		if (field->drops[index] != 0)
-		    field->mrad[index] /= field->drops[index];
-	}
 	/*compute source for Navier Stokes equation:ext_accel[dim][index]*/
 	if (eqn_params->if_volume_force)
 	    computeVolumeForce();
@@ -4317,9 +4356,12 @@ void VCARTESIAN::output()
 	    recordField(field->vel[0],"xvel");
 	    recordField(field->vel[1],"yvel");
 	    recordField(field->supersat,"supersat");
+	    recordField(field->cloud,"cloud");
 	    if (dim == 3)
 	        recordField(field->vel[2],"zvel");
-            recordParticles();
+            //slow with parallel I/O, should be fixed
+            //recordParticles();
+            recordRadiusInCell();
 	}
 }
 

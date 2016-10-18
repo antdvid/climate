@@ -16,7 +16,7 @@ Type yes to turn off auto-redistribution: y
 
 Enter problem type: ENTRAINMENT 
 Enter case type: 2 
-Enter yes to use big data: yes
+Enter yes to use big data: no 
 ******************Initial phase conditions***********
 Enter initial temperature(K): 270.75
 Enter initial vapor mixing ratio(g/kg): 0.03138 
@@ -75,7 +75,7 @@ Type y to make vector velocity field movie: n
 
 Enter yes for debugging: yes 
 Enter the debugging string: ttrace
-Enter the debugging string: MPIIO 
+Enter the debugging string: tMPIIO 
 Enter the debugging string: tPETSc
 Enter the debugging string: tparticles 
 Enter the debugging string: tCLOCK

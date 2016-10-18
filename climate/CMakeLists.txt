@@ -14,6 +14,7 @@ endif()
 
 #enable hdf5 library for big data
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__HDF5__")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__HDF5__")
 
 #end find hdf5 library
 
