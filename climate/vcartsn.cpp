@@ -4356,6 +4356,7 @@ void VCARTESIAN::output()
 	    recordField(field->vel[0],"xvel");
 	    recordField(field->vel[1],"yvel");
 	    recordField(field->supersat,"supersat");
+	    recordField(field->vapor,"vapor");
 	    recordField(field->cloud,"cloud");
 	    if (dim == 3)
 	        recordField(field->vel[2],"zvel");
