@@ -3,6 +3,7 @@ file(GLOB solver_source "*.cpp" "*.h")
 add_library(solver STATIC ${solver_source})
 
 find_package (PETSc)
+find_package (HDF5)
 
 if (PETSC_FOUND)
     MESSAGE("-- Found PETSc: ${PETSc_LIBRARY}")
@@ -12,7 +13,6 @@ if (PETSC_FOUND)
 else ()
     MESSAGE(FATAL_ERROR "Could NOT find PETSc, be sure to set PETSC_DIR and PETSc is configured with --download-hypre")
 endif()
-
 
 target_include_directories(solver PUBLIC 
                            	    ${frontier_include_dir} 

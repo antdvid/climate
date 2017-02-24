@@ -12,9 +12,17 @@ else ()
     MESSAGE(FATAL_ERROR "FFTW3 cannot be found. Be sure to set FFTW3_DIR.")
 endif()
 
+find_package (HDF5)
 #enable hdf5 library for big data
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__HDF5__")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__HDF5__")
+if (HDF5_FOUND)
+    MESSAGE("-- Found HDF5: ${HDF5_LIBRARIES}")
+    list(APPEND external_include_dir ${HDF5_INCLUDE_DIRS})
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__HDF5__")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__HDF5__")
+else ()
+    MESSAGE(WARNING "Could NOT find HDF5")
+endif()
+
 
 #end find hdf5 library
 
