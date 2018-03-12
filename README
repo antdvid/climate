@@ -1,3 +1,8 @@
+# Disclaimer: 
+Please contact Dr. Yangang Liu at lyg@bnl.gov if you would like to use the model.  
+We are still working to improve the model by enlarging the model domain and considering more physical processes such as droplet activation/deactivation and collection, and would like to know your comments on the work or feedbacks on the model.
+
+# How to setup
 1. The project depends on the following packages
 --------------------------------------------------
 Package_Name 	Version
